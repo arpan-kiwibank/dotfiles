@@ -1,0 +1,11 @@
+[Unit]
+Description=focus-last(i3 alt tab)
+
+[Service]
+Type=simple
+Environment=DISPLAY=:0
+ExecStart=%h/.config/i3/scripts/focus-last.py
+Restart=always
+
+[Install]
+WantedBy=defalt.target

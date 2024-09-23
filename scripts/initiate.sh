@@ -83,16 +83,9 @@ function main() {
 	fi
 
 	if [[ "$is_update" = true ]]; then
-		source $current_dir/lib/dotsinstaller/install-basic-packages.sh
-		source $current_dir/lib/dotsinstaller/install-neovim.sh
-		ln -snf $current_dir/lib/dotsinstaller/bin/* ~/.local/bin/
-
-		if [[ "$with_gui" = true ]]; then
-			source $current_dir/lib/dotsinstaller/install-extra.sh
-			source $current_dir/lib/dotsinstaller/setup-terminal.sh
-			source $current_dir/lib/dotsinstaller/install-hyprland.sh
-			source $current_dir/lib/dotsinstaller/setup-default-app.sh
-			source $current_dir/lib/dotsinstaller/install-font.sh
+		source $current_dir/basic-packages.sh
+		#source $current_dir/lib/dotsinstaller/install-neovim.sh
+		ln -snf $current_dir/bin/* ~/.local/bin/
 		fi
 
 		print_info ""
@@ -100,7 +93,7 @@ function main() {
 		print_info "$(basename "${BASH_SOURCE[0]:-$0}") update finish!!!"
 		print_info "#####################################################"
 		print_info ""
-	fi
+	
 }
 
 main "$@"

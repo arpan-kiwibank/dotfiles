@@ -1,0 +1,95 @@
+[[snippets]]
+  description = "docker privileged args"
+  command = "--privileged --cap-add=SYS_PTRACE --security-opt=\"seccomp=unconfined\""
+  output = ""
+
+[[snippets]]
+  description = "docker fuse"
+command = "--privileged --cap-add=SYS_PTRACE --security-opt=\"seccomp=unconfined\" --cap-add SYS_ADMIN --cap-add MKNOD --device /dev/fuse:mrw"
+  output = ""
+
+[[snippets]]
+  description = "run dev docker"
+  command = "sudo docker run -it --rm --privileged --cap-add=SYS_PTRACE --security-opt=\"seccomp=unconfined\" --net=dev-net -v ${HOME}:/root/share --name xxx xxx /bin/bash"
+  output = ""
+
+[[snippets]]
+  description = "ssh & exec dev docker"
+  command = "ssh -tt xxx@xxx -p xxx docker exec -it -e SSH_CLIENT='abc' -e SSH_TTY='xyz' xxx /bin/zsh"
+  output = ""
+
+[[snippets]]
+  description = "ssh localforward"
+  command = "ssh -A -L local-port:remote-ip:remote-port xxx@xxx"
+  output = ""
+
+[[snippets]]
+  description = "ssh remoteforward"
+  command = "ssh -A -R local-port:local-ip:remote-port xxx@xxx"
+  output = ""
+
+[[snippets]]
+  description = "xauth add"
+  command = "xauth add ${DISPLAY} . (token)"
+  output = ""
+
+[[snippets]]
+  description = "xrandr extend"
+  command = "xrandr --output eDP-1 --primary --output HDMI-1 --mode 1920x1080 --right-of eDP-1"
+  output = ""
+
+[[snippets]]
+  description = "xrandr mirror"
+  command = "xrandr --output eDP-1 --primary --output HDMI-1 --mode 1920x1080 --same-as eDP-1"
+  output = ""
+
+[[snippets]]
+  description = "xrandr off"
+  command = "xrandr --output eDP-1 --primary --output HDMI-1 --off"
+  output = ""
+
+[[snippets]]
+  description = "unix(LF) next line mode"
+  command = "nkf -Lu --overwrite"
+  output = ""
+
+[[snippets]]
+  description = "remote desktop"
+  command = "xfreerdp /d: /v:ip /u:username /p:password /w:2560 /h:1440 +fonts +compression  +smart-sizing -clipboard -grab-keyboard"
+  output = ""
+
+[[snippets]]
+  description = "build and install to zinit directory"
+  command = "make -j 20 CMAKE_INSTALL_PREFIX=$ZPLG_HOME/plugins/neovim---neovim/nvim-linux64/ install"
+  output = ""
+
+[[snippets]]
+  description = "loopback microphone"
+  command = "pactl load-module module-loopback latency_msec=1"
+  output = ""
+
+[[snippets]]
+  description = "unloopback microphone"
+  command = "pacmd unload-module module-loopback"
+  output = ""
+
+[[snippets]]
+  description = "xterm with modifyotherkeys"
+  command = "xterm -xrm '*modifyOtherKeys:1' -xrm '*formatOtherKeys:1'"
+  output = ""
+
+[[snippets]]
+  description = "check nat using iptables"
+  command = "sudo iptables --list -v -t nat -n"
+  output = ""
+
+[[snippets]]
+  description = "recv failure: connection reset by peer on docker"
+  command = "sudo ip link set 'if-name' promisc on"
+  output = ""
+
+[[snippets]]
+  description = "find large-size files"
+  command = "du -b | sort -n | numfmt --to=iec --suffix=B --padding=5"
+  output = ""
+
