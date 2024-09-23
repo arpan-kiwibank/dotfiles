@@ -42,26 +42,3 @@ function main() {
 }
 
 main "$@"
-
-
-get_os() {
-
-    local os=""
-    local kernelName=""
-
-    # - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - - -
-
-    kernelName="$(uname -s)"
-
-    if [ "$kernelName" == "Darwin" ]; then
-        os="macos"
-    elif [ "$kernelName" == "Linux" ] && \
-         [ -e "/etc/os-release" ]; then
-        os="$(. /etc/os-release; printf "%s" "$ID")"
-    else
-        os="$kernelName"
-    fi
-
-    printf "%s" "$os"
-
-}
