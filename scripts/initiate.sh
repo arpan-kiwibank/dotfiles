@@ -84,7 +84,7 @@ function main() {
 
 	if [[ "$is_update" = true ]]; then
 		source $current_dir/basic-packages.sh
-		source $current_dir/scripts/nvim.sh
+		source $current_dir/nvim.sh
 		ln -snf $current_dir/bin/* ~/.local/bin/
 		fi
 
