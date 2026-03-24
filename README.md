@@ -48,6 +48,13 @@ mkdir -p "$tmp_root/home/.config" "$tmp_root/cache"
 HOME="$tmp_root/home" XDG_CACHE_HOME="$tmp_root/cache" ./scripts/initiate.sh link
 ```
 
+### Neovim nightly notes
+
+The bootstrap script installs Neovim nightly from GitHub release assets and currently supports Linux architectures:
+
+- x86_64 (amd64)
+- arm64 (aarch64)
+
 1. zsh plugin install
 
    ```bash
@@ -57,7 +64,7 @@ HOME="$tmp_root/home" XDG_CACHE_HOME="$tmp_root/cache" ./scripts/initiate.sh lin
 1. neovim plugin install
 
    ```bash
-   vi --headless -c 'Lazy! sync' -c 'qall'
+   nvim --headless -c 'Lazy! sync' -c 'qall'
    ```
 
 1. Enjoy!
