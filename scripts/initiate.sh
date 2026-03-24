@@ -7,10 +7,12 @@ set -euo pipefail
 #--------------------------------------------------------------#
 
 function helpmsg() {
-	print_default "Usage: ${BASH_SOURCE[0]:-$0} [install | update | link] [--dry-run | -n] [--help | -h]" 0>&2
+	print_default "Usage: ${BASH_SOURCE[0]:-$0} [install | update | link] [--profile <name>] [--with-legacy] [--dry-run | -n] [--help | -h]" 0>&2
 	print_default "  install: add require package install and symbolic link to $HOME from dotfiles [default]"
 	print_default "  update: add require package install or update."
 	print_default "  link: only symbolic link to $HOME from dotfiles."
+	print_default "  --profile: full (default) or hypr-minimal."
+	print_default "  --with-legacy: keep linking legacy/overlapping tool configs for selected profile."
 	print_default "  --dry-run: print planned changes without modifying the system."
 	print_default ""
 }
@@ -29,6 +31,8 @@ function main() {
 	local is_update="false"
 	local action=""
 	local dry_run="${DOTFILES_DRY_RUN:-false}"
+	local profile="${DOTFILES_PROFILE:-full}"
+	local with_legacy="${DOTFILES_WITH_LEGACY:-false}"
 
 	while [ $# -gt 0 ]; do
 		case ${1} in
@@ -38,6 +42,18 @@ function main() {
 				;;
 			--dry-run | -n)
 				dry_run="true"
+				;;
+			--profile)
+				if [[ $# -lt 2 ]]; then
+					echo "[ERROR] --profile requires a value"
+					helpmsg
+					exit 1
+				fi
+				profile="$2"
+				shift
+				;;
+			--with-legacy)
+				with_legacy="true"
 				;;
 			install)
 				action="install"
@@ -61,10 +77,24 @@ function main() {
 		shift
 	done
 
+	case "$profile" in
+		full | hypr-minimal)
+			;;
+		*)
+			echo "[ERROR] Invalid profile '$profile' (supported: full, hypr-minimal)"
+			helpmsg
+			exit 1
+			;;
+	esac
+
 	if [[ "$dry_run" == "true" ]]; then
 		export DOTFILES_DRY_RUN=true
 		print_notice "Dry-run mode enabled"
 	fi
+
+	export DOTFILES_PROFILE="$profile"
+	export DOTFILES_WITH_LEGACY="$with_legacy"
+	print_notice "Profile: $DOTFILES_PROFILE (with-legacy=$DOTFILES_WITH_LEGACY)"
 
 	# default behaviour
 	if [[ -z "$action" ]]; then

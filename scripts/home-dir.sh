@@ -97,12 +97,19 @@ function install_by_local_installer() {
 function link_config_dir() {
 	local dotfiles_dir=$1
 	local backupdir="${2}/.config"
+	local -a config_linkignore=("${@:3}")
 	mkdir_not_exist "$backupdir"
 	local dest_dir="${HOME}/.config" # ${XDG_CONFIG_HOME}
 	mkdir_not_exist "$dest_dir"
 
 	shopt -s nullglob
 	for f in "$dotfiles_dir"/.config/??*; do
+		local f_filename
+		f_filename=$(basename "$f")
+		if contains_exact "$f_filename" "${config_linkignore[@]}"; then
+			print_notice "Skip (.config ignore): $f_filename"
+			continue
+		fi
 		backup_and_link "$f" "$dest_dir" "$backupdir"
 	done
 	shopt -u nullglob
@@ -130,11 +137,41 @@ function link_to_homedir() {
 		".git"
 		".gitmodules"
 	)
+	local -a config_linkignore=()
 	if [[ -e "$dotfiles_dir/.linkignore" ]]; then
 		while IFS= read -r entry; do
 			[[ -z "$entry" || "$entry" == \#* ]] && continue
+			if [[ "$entry" == .config/* ]]; then
+				config_linkignore+=("${entry#.config/}")
+				continue
+			fi
 			linkignore+=("$entry")
 		done <"$dotfiles_dir/.linkignore"
+	fi
+
+	local profile="${DOTFILES_PROFILE:-full}"
+	local with_legacy="${DOTFILES_WITH_LEGACY:-false}"
+	if [[ "$profile" == "hypr-minimal" && "$with_legacy" != "true" ]]; then
+		config_linkignore+=(
+			"i3"
+			"i3-resurrect"
+			"river"
+			"wayfire"
+			"qtile"
+			"polybar"
+			"eww"
+			"ags"
+			"deadd"
+			"fcitx"
+			"rofi"
+			"wofi"
+			"alacritty"
+			"termite"
+			"asdf"
+			"anyenv"
+			"luakit"
+		)
+		print_notice "Applying hypr-minimal config filters"
 	fi
 	if [[ "$HOME" != "$dotfiles_dir" ]]; then
 		shopt -s nullglob
@@ -142,7 +179,7 @@ function link_to_homedir() {
 			local f_filename
 			f_filename=$(basename "$f")
 			contains_exact "$f_filename" "${linkignore[@]}" && continue
-			[[ "$f_filename" == ".config" ]] && link_config_dir "$dotfiles_dir" "$backupdir" && continue
+			[[ "$f_filename" == ".config" ]] && link_config_dir "$dotfiles_dir" "$backupdir" "${config_linkignore[@]}" && continue
 			backup_and_link "$f" "$HOME" "$backupdir"
 		done
 		shopt -u nullglob

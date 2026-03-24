@@ -23,6 +23,26 @@
    ./setup.sh
    ```
 
+### Profile modes
+
+The installer supports profile-driven linking to reduce redundant tool configs while keeping default behavior unchanged.
+
+- `full` (default): links all dotfiles and tool configs.
+- `hypr-minimal`: links a Hyprland-focused set and skips overlapping legacy configs (i3/river/wayfire/qtile, old launchers, legacy IME/tool managers).
+
+Examples:
+
+```bash
+# default profile
+./setup.sh
+
+# reduced profile for a cleaner Hyprland setup
+./setup.sh --profile hypr-minimal
+
+# keep legacy configs even in minimal profile
+./setup.sh --profile hypr-minimal --with-legacy
+```
+
 ### Dry-run verification
 
 Use dry-run mode to verify install, link, and update phases without changing your system:
