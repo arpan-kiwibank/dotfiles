@@ -1,5 +1,32 @@
 #! /bin/bash
 
+function is_dry_run() {
+	case "${DOTFILES_DRY_RUN:-false}" in
+		1 | true | TRUE | yes | YES | y | Y)
+			return 0
+			;;
+		*)
+			return 1
+			;;
+	esac
+}
+
+function run_cmd() {
+	if is_dry_run; then
+		print_notice "[dry-run] $*"
+		return 0
+	fi
+	"$@"
+}
+
+function run_cmd_shell() {
+	if is_dry_run; then
+		print_notice "[dry-run] $*"
+		return 0
+	fi
+	bash -c "$*"
+}
+
 function print_default() {
 	echo -e "$*"
 }
@@ -87,12 +114,12 @@ function checkinstall() {
 	local distro
 	distro=$(whichdistro)
 	if [[ $distro == "redhat" ]]; then
-		sudo yum clean all
+		run_cmd sudo yum clean all
 		if ! grep -i "fedora" /etc/redhat-release >/dev/null; then
-			sudo yum install -y epel-release
+			run_cmd sudo yum install -y epel-release
 			if [[ $(cat /etc/*release | grep '^VERSION=' | cut -d '"' -f 2 | cut -d " " -f 1) -ge 8 ]]; then
-				sudo dnf install -y 'dnf-command(config-manager)'
-				sudo dnf config-manager --set-enabled powertools
+				run_cmd sudo dnf install -y 'dnf-command(config-manager)'
+				run_cmd sudo dnf config-manager --set-enabled powertools
 			fi
 		fi
 	fi
@@ -100,15 +127,15 @@ function checkinstall() {
 	local pkgs="$*"
 	if [[ $distro == "debian" ]]; then
 		pkgs=${pkgs//python-pip/python3-pip}
-		sudo DEBIAN_FRONTEND=noninteractive apt-get install -y $pkgs
+		run_cmd env DEBIAN_FRONTEND=noninteractive apt-get install -y $pkgs
 	elif [[ $distro == "redhat" ]]; then
-		sudo yum install -y $pkgs
+		run_cmd sudo yum install -y $pkgs
 	elif [[ $distro == "arch" ]]; then
-		sudo pacman -S --noconfirm --needed $pkgs
+		run_cmd sudo pacman -S --noconfirm --needed $pkgs
 	elif [[ $distro == "alpine" ]]; then
-		sudo bash -c "$(declare -f append_file_if_not_exist); append_file_if_not_exist http://dl-3.alpinelinux.org/alpine/edge/testing/ /etc/apk/repositories"
+		run_cmd sudo bash -c "$(declare -f append_file_if_not_exist); append_file_if_not_exist http://dl-3.alpinelinux.org/alpine/edge/testing/ /etc/apk/repositories"
 		pkgs=${pkgs//python-pip/py-pip}
-		sudo apk add $pkgs
+		run_cmd sudo apk add $pkgs
 	else
 		:
 	fi
@@ -122,20 +149,24 @@ function git_clone_or_fetch() {
 	if [ ! -d "$dest/.git" ]; then
 		print_default "Installing $name..."
 		print_default ""
-		mkdir -p $dest
-		git clone --depth 1 $repo $dest
+		run_cmd mkdir -p "$dest"
+		run_cmd git clone --depth 1 "$repo" "$dest"
 	else
 		print_default "Pulling $name..."
-		(
-			builtin cd $dest && git pull --depth 1 --rebase origin "$(basename "$(git symbolic-ref --short refs/remotes/origin/HEAD)")" ||
-			print_notice "Exec in compatibility mode [git pull --rebase]" &&
-			builtin cd $dest && git fetch --unshallow && git rebase origin/"$(basename "$(git symbolic-ref --short refs/remotes/origin/HEAD)")"
-		)
+		if is_dry_run; then
+			print_notice "[dry-run] git pull --depth 1 --rebase in $dest"
+		else
+			(
+				builtin cd "$dest" && git pull --depth 1 --rebase origin "$(basename "$(git symbolic-ref --short refs/remotes/origin/HEAD)")" ||
+				print_notice "Exec in compatibility mode [git pull --rebase]" &&
+				builtin cd "$dest" && git fetch --unshallow && git rebase origin/"$(basename "$(git symbolic-ref --short refs/remotes/origin/HEAD)")"
+			)
+		fi
 	fi
 }
 
 function mkdir_not_exist() {
 	if [ ! -d "$1" ]; then
-		mkdir -p "$1"
+		run_cmd mkdir -p "$1"
 	fi
 }

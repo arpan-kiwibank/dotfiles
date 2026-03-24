@@ -20,8 +20,33 @@
 1. Install
 
    ```bash
-   ./install.sh
+   ./setup.sh
    ```
+
+### Dry-run verification
+
+Use dry-run mode to verify install, link, and update phases without changing your system:
+
+```bash
+./setup.sh --dry-run
+```
+
+You can also run a single phase:
+
+```bash
+./scripts/initiate.sh link --dry-run
+./scripts/initiate.sh update --dry-run
+```
+
+### Controlled real link test (isolated HOME)
+
+Run the link phase against a temporary HOME directory to validate actual symlink creation safely:
+
+```bash
+tmp_root=/tmp/dotfiles-real-link
+mkdir -p "$tmp_root/home/.config" "$tmp_root/cache"
+HOME="$tmp_root/home" XDG_CACHE_HOME="$tmp_root/cache" ./scripts/initiate.sh link
+```
 
 1. zsh plugin install
 
