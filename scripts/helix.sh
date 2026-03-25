@@ -119,4 +119,6 @@ function install_helix() {
 	install_helix_binary_fallback
 }
 
-install_helix
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    install_helix
+fi

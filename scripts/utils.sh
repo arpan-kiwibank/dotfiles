@@ -12,7 +12,11 @@ function is_dry_run() {
 }
 
 function is_wsl() {
-	grep -qi microsoft /proc/version 2>/dev/null
+	# /proc/version contains "microsoft" on WSL2, but Docker containers running on a WSL2 host
+	# share the same kernel and therefore show the same string. WSLInterop only exists in a
+	# real WSL session, not inside Docker-on-WSL, so we require both conditions.
+	grep -qi microsoft /proc/version 2>/dev/null &&
+		[[ -e /proc/sys/fs/binfmt_misc/WSLInterop ]]
 }
 
 function run_cmd() {
