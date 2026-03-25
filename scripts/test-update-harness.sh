@@ -3,9 +3,10 @@
 set -euo pipefail
 
 function helpmsg() {
-	echo "Usage: ${BASH_SOURCE[0]:-$0} [--keep] [profile ...]" 1>&2
+	echo "Usage: ${BASH_SOURCE[0]:-$0} [--keep] [--docker] [profile ...]" 1>&2
 	echo "  profile: full or hypr-minimal (default: both)" 1>&2
-	echo "  --keep: keep temporary test directories even on success" 1>&2
+	echo "  --keep:   keep temporary test directories even on success" 1>&2
+	echo "  --docker: also run in-container distro tests (requires docker daemon)" 1>&2
 }
 
 function fail() {
@@ -299,8 +300,64 @@ HXMOCK
 	fi
 }
 
+# Run test-docker-distro.sh inside a single container image.
+# Skips gracefully when Docker is not available.
+# Arguments: dotfiles_dir  label  image  expected_distro
+function run_single_docker_test() {
+	local dotfiles_dir="$1"
+	local label="$2"
+	local image="$3"
+	local expected_distro="$4"
+
+	if ! command -v docker >/dev/null 2>&1 || ! docker info >/dev/null 2>&1; then
+		echo "  [SKIP] docker not available — $label"
+		return 0
+	fi
+
+	echo "Docker test: $label ($image)…"
+
+	local log_file
+	log_file=$(mktemp /tmp/docker-test-XXXXXX.log)
+
+	if docker run --rm \
+			--volume "$dotfiles_dir:/dotfiles:ro" \
+			"$image" \
+			bash /dotfiles/scripts/test-docker-distro.sh > "$log_file" 2>&1; then
+		# The in-container script asserts dispatch and exits non-zero on failure.
+		# We additionally verify the expected distro and [PASS] line from stdout.
+		grep -q "whichdistro=$expected_distro" "$log_file" \
+			|| fail "docker=$label: expected whichdistro=$expected_distro in output"
+		grep -q "^\[PASS\]" "$log_file" \
+			|| fail "docker=$label: no [PASS] line in container output"
+		echo "[PASS] docker=$label (distro=$expected_distro)"
+	else
+		echo "[FAIL] docker=$label" 1>&2
+		cat "$log_file" 1>&2
+		rm -f "$log_file"
+		exit 1
+	fi
+	rm -f "$log_file"
+}
+
+# Run in-container distro tests for all three supported distro families.
+function run_docker_distro_tests() {
+	local dotfiles_dir="$1"
+
+	if ! command -v docker >/dev/null 2>&1 || ! docker info >/dev/null 2>&1; then
+		echo "[SKIP] Docker not available — distro container tests skipped"
+		echo "       Install Docker and re-run with --docker to enable them."
+		return 0
+	fi
+
+	echo "Running Docker distro tests…"
+	run_single_docker_test "$dotfiles_dir" "fedora"    "fedora:latest"      "redhat"
+	run_single_docker_test "$dotfiles_dir" "archlinux" "archlinux:latest"   "arch"
+	run_single_docker_test "$dotfiles_dir" "debian"    "debian:stable-slim" "debian"
+}
+
 function main() {
 	local keep_tmp="false"
+	local run_docker="false"
 	local -a profiles=()
 	local arg
 
@@ -312,6 +369,9 @@ function main() {
 				;;
 			--keep)
 				keep_tmp="true"
+				;;
+			--docker)
+				run_docker="true"
 				;;
 			full | hypr-minimal)
 				profiles+=("$arg")
@@ -341,6 +401,10 @@ function main() {
 	done
 
 	run_profile_switch_test "$dotfiles_dir" "$keep_tmp"
+
+	if [[ "$run_docker" == "true" ]]; then
+		run_docker_distro_tests "$dotfiles_dir"
+	fi
 }
 
 main "$@"

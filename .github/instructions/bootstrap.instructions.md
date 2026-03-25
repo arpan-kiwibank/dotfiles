@@ -112,3 +112,16 @@ Neovim (`nvim.sh`) and Helix (`helix.sh`) detect `uname -m` and download:
 ## Test harness
 
 `scripts/test-update-harness.sh` mocks: `apt-get`, `yum`, `dnf`, `pacman`, `curl`, `tar` (smart: creates fake extracted dirs), `chsh`, `sudo` (passthrough exec so mocked commands remain reachable within sudo calls). Run it after any change to `initiate.sh`, `home-dir.sh`, `utils.sh`, `helix.sh`, or `nvim.sh`. The harness also asserts the active-profile state file is written correctly and verifies the full profile-switch path (link → detect switch → unlink removed entries → autoremove).
+
+```bash
+./scripts/test-update-harness.sh             # both profiles, local (debian-path mocks)
+./scripts/test-update-harness.sh --docker    # also runs in-container tests for all distros
+./scripts/test-update-harness.sh --keep      # keep tmp dirs on success for inspection
+```
+
+**Docker distro tests** (`--docker`): runs `scripts/test-docker-distro.sh` inside `fedora:latest`, `archlinux:latest`, and `debian:stable-slim`. Inside each container the script stubs all package managers, curl, tar, hx, and chsh (logging calls but never installing), then runs the full `initiate.sh update` pipeline and asserts the correct package manager was dispatched. Skips gracefully when Docker is not available. Requires pulling images on first run (~70–150 MB each).
+
+The in-container test verifies:
+- `whichdistro()` returns the right string (`redhat`, `arch`, `debian`) for each base image
+- Bash syntax compatibility with the distro's default bash version
+- `checkinstall` dispatches to `yum`/`dnf`, `pacman`, or `apt-get` respectively
