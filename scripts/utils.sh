@@ -118,6 +118,55 @@ function whichdistro() {
 	fi
 }
 
+function ensure_prerequisites() {
+	# Install git and curl if absent. Runs before ensure_sudo so the package
+	# manager is invoked directly. No-op when both tools are already present
+	# or when in dry-run mode.
+	if command -v git >/dev/null 2>&1 && command -v curl >/dev/null 2>&1; then
+		return 0
+	fi
+
+	if is_dry_run; then
+		print_notice "[dry-run] would install missing prerequisites (git, curl)"
+		return 0
+	fi
+
+	local distro
+	distro=$(whichdistro)
+
+	case "$distro" in
+		debian)
+			print_notice "Installing prerequisites (git, curl)…"
+			if [[ "$EUID" -ne 0 ]]; then
+				sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y git curl
+			else
+				env DEBIAN_FRONTEND=noninteractive apt-get install -y git curl
+			fi
+			;;
+		redhat)
+			print_notice "Installing prerequisites (git, curl)…"
+			if [[ "$EUID" -ne 0 ]]; then
+				sudo dnf install -y git curl 2>/dev/null || sudo yum install -y git curl
+			else
+				dnf install -y git curl 2>/dev/null || yum install -y git curl
+			fi
+			;;
+		arch)
+			print_notice "Installing prerequisites (git, curl)…"
+			if [[ "$EUID" -ne 0 ]]; then
+				sudo pacman -S --noconfirm --needed git curl
+			else
+				pacman -S --noconfirm --needed git curl
+			fi
+			;;
+		*)
+			print_warning "Unknown distro — cannot install prerequisites automatically."
+			print_notice "Install git and curl manually, then re-run setup.sh."
+			exit 1
+			;;
+	esac
+}
+
 function ensure_sudo() {
 	# No-op when already root (Docker / CI) or in dry-run mode — no password needed.
 	if [[ "$EUID" -eq 0 ]] || is_dry_run; then

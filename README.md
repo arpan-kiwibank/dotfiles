@@ -63,18 +63,7 @@ Distros detected automatically via `/etc/os-release`:
 | Arch Linux | `arch` | `sudo pacman` |
 | Alpine | `alpine` | ❌ not supported — exits with a clear error |
 
-**Prerequisites** (install before running `./setup.sh`):
-
-```bash
-# Debian / Ubuntu
-sudo apt-get install -y git curl
-
-# Fedora / RHEL
-sudo dnf install -y git curl
-
-# Arch
-sudo pacman -S --noconfirm git curl
-```
+`git` and `curl` are installed automatically if absent — no manual prerequisites needed.
 
 **Sudo prompt** — `ensure_sudo()` authenticates once upfront and keeps the ticket alive for the full bootstrap run. You are prompted exactly once. Skipped when running as root or with `--dry-run`.
 

@@ -14,6 +14,8 @@ description: "Use when: changing bootstrap scripts, setup flow, install/update/l
 
 ## Sudo and privileged operations
 
+`ensure_prerequisites()` in `utils.sh` installs `git` and `curl` if either is absent. It is called before `ensure_sudo()` at the start of any install or update phase. It invokes the distro package manager directly (not via `checkinstall`) and handles both root and non-root contexts. It is a no-op when both tools are already present or when `is_dry_run` is true. Alpine exits at this point before reaching `checkinstall`.
+
 `ensure_sudo()` in `utils.sh` is the single entry point for sudo. It:
 - Checks `sudo` is available and exits with a clear message if not
 - Prints a user-visible explanation before prompting
