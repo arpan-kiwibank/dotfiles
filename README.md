@@ -11,10 +11,6 @@ Supported stack:
 - Alternate desktop: Sway
 - Historical archive: retained in git as reference only
 
-## Supported OS
-
-- Ubuntu
-
 ## Repository layout
 
 ```text
