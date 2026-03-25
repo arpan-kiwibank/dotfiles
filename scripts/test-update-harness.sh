@@ -264,15 +264,19 @@ echo 'helix 0.0 (mock)'; exit 0
 HXMOCK
 	chmod +x "$mock_dir/hx"
 
-	# ---- Step 1: install with 'full' profile ----
+	# ---- Step 1: initial full install (link only, no package update needed) ----
 	PATH="$mock_dir:$PATH" HOME="$home_dir" XDG_CACHE_HOME="$cache_dir" XDG_DATA_HOME="$home_dir/.local/share" \
 		bash "$dotfiles_dir/scripts/initiate.sh" link --profile full > "$tmp_root/run-full.log" 2>&1 \
 		|| { echo "[FAIL] switch-test: initial full link failed"; cat "$tmp_root/run-full.log" 1>&2; exit 1; }
 
-	# ---- Step 2: switch to 'hypr-minimal' ----
+	# ---- Step 2: switch to 'hypr-minimal' via install (exercises autoremove) ----
+	# Using 'install' rather than 'link' so the full switch path runs:
+	#   link (detects switch, unlinks removed entries, sets DOTFILES_PROFILE_SWITCHED)
+	#   → update (packages, helix, nvim, then autoremove at end)
+	: > "$tmp_root/commands.log"
 	PATH="$mock_dir:$PATH" HOME="$home_dir" XDG_CACHE_HOME="$cache_dir" XDG_DATA_HOME="$home_dir/.local/share" \
-		bash "$dotfiles_dir/scripts/initiate.sh" link --profile hypr-minimal > "$tmp_root/run-switch.log" 2>&1 \
-		|| { echo "[FAIL] switch-test: profile switch link failed"; cat "$tmp_root/run-switch.log" 1>&2; exit 1; }
+		bash "$dotfiles_dir/scripts/initiate.sh" install --profile hypr-minimal > "$tmp_root/run-switch.log" 2>&1 \
+		|| { echo "[FAIL] switch-test: profile switch install failed"; cat "$tmp_root/run-switch.log" 1>&2; exit 1; }
 
 	# State file should record the new profile
 	local state_file="$home_dir/.local/share/dotfiles/active-profile"
@@ -281,10 +285,12 @@ HXMOCK
 	recorded=$(cat "$state_file")
 	[[ "$recorded" == "hypr-minimal" ]] \
 		|| fail "switch-test: state file contains '$recorded', expected 'hypr-minimal'"
-
-	# Switch message should appear if profiles differ
-	# (currently they are identical, so no switch cleanup — but the state is recorded)
 	echo "  profile switch: state file updated to hypr-minimal: OK"
+
+	# Autoremove should have been called (apt-get on debian/ubuntu)
+	grep -q "autoremove" "$tmp_root/commands.log" \
+		|| fail "switch-test: expected autoremove command in commands.log after profile switch"
+	echo "  profile switch: autoremove called: OK"
 
 	echo "[PASS] profile-switch-test root=$tmp_root"
 

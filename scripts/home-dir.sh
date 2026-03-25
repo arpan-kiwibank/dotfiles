@@ -171,11 +171,18 @@ function unlink_removed_entries() {
 		f_filename=$(basename "$source_path")
 		f_filepath="$dest_dir/$f_filename"
 
-		# Only remove if the symlink definitively points to our dotfiles repo.
-		# Entries managed by _install.sh hooks create internal symlinks rather
-		# than a top-level symlink to the source dir, so symlink_points_to won't
-		# match them — they are left untouched and require manual cleanup if needed.
-		if symlink_points_to "$f_filepath" "$source_path"; then
+		# For entries managed by _install.sh hooks the source dir contains nested
+		# files linked into the dest dir individually — handle them separately.
+		local has_hook=false
+		if [[ -d "$source_path" ]]; then
+			local hook_files=()
+			mapfile -t hook_files < <(command find "$source_path" -name "_install.sh" -type f 2>/dev/null)
+			[[ ${#hook_files[@]} -gt 0 ]] && has_hook=true
+		fi
+
+		if [[ "$has_hook" == true ]]; then
+			unlink_hook_entry "$dotfiles_dir" "$old_entry"
+		elif symlink_points_to "$f_filepath" "$source_path"; then
 			print_notice "Unlinking (profile switch): $f_filepath"
 			run_cmd command rm -f "$f_filepath"
 			count_removed=$((count_removed + 1))
@@ -184,8 +191,43 @@ function unlink_removed_entries() {
 
 	if [[ "$count_removed" -gt 0 ]]; then
 		print_success "Removed $count_removed symlinks from old profile ($old_profile)"
-		print_notice "Note: system packages installed by the old profile are not auto-removed."
-		print_notice "      Run 'sudo apt autoremove' (or equivalent) manually if needed."
+	fi
+}
+
+# For a manifest entry managed by _install.sh hooks, remove all symlinks inside the
+# destination directory tree that resolve back into the entry's source directory.
+# This covers entries like config/core/Code/ where _install.sh links individual files
+# rather than one top-level symlink.
+function unlink_hook_entry() {
+	local dotfiles_dir="$1"
+	local old_entry="$2"
+	local source_path="$dotfiles_dir/$old_entry"
+	local resolved_source
+	resolved_source=$(readlink -f "$source_path" 2>/dev/null) || return 0
+
+	# _install.sh convention: target dir is $dest_dir/<basename>
+	local dest_dir
+	case "$old_entry" in
+		config/*) dest_dir="${XDG_CONFIG_HOME:-$HOME/.config}" ;;
+		*)        return 0 ;;
+	esac
+
+	local target_dir="$dest_dir/$(basename "$source_path")"
+	[[ -d "$target_dir" ]] || return 0
+
+	local f f_resolved
+	while IFS= read -r -d '' f; do
+		f_resolved=$(readlink -f "$f" 2>/dev/null) || continue
+		if [[ "$f_resolved" == "$resolved_source/"* ]]; then
+			print_notice "Unlinking hook entry (profile switch): $f"
+			run_cmd command rm -f "$f"
+		fi
+	done < <(command find "$target_dir" -type l -print0 2>/dev/null)
+
+	# Remove empty dirs left behind
+	if ! is_dry_run; then
+		command find "$target_dir" -mindepth 1 -type d -empty -delete 2>/dev/null || true
+		rmdir "$target_dir" 2>/dev/null || true
 	fi
 }
 
@@ -327,6 +369,7 @@ function link_to_homedir() {
 	if [[ -n "$prev_profile" && "$prev_profile" != "$profile" ]]; then
 		print_notice "Profile switch: $prev_profile → $profile"
 		unlink_removed_entries "$dotfiles_dir" "$prev_profile" manifest_entries
+		export DOTFILES_PROFILE_SWITCHED=true
 	fi
 
 	# Persist the active profile before linking so future runs detect switches.

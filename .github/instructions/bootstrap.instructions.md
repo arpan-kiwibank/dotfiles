@@ -71,8 +71,9 @@ When a user switches from one profile to another (e.g. `full` → `hypr-minimal`
 3. Writes the new profile name to the state file before starting the link loop, so future runs detect further switches correctly even if the current run is interrupted.
 
 **Important constraints:**
-- System packages installed by the old profile are **not** auto-removed. After switching, run `sudo apt autoremove` (or distro equivalent) if you want to reclaim disk space.
-- Entries that use `_install.sh` hooks (e.g. `config/core/Code/`) create internal symlinks that `unlink_removed_entries` cannot track. Removing those requires manual cleanup.
+- Entries that use `_install.sh` hooks (e.g. `config/core/Code/`) are now handled automatically: `unlink_hook_entry()` scans the destination directory for any symlinks whose resolved path falls inside the old entry's source directory, and removes them. Empty directories left behind are also removed. This covers any hook that follows the `$dest_dir/<basename>/...` convention.
+- `run_autoremove()` in `initiate.sh` calls the distro-specific package autoremove (`apt-get autoremove -y` on Debian/Ubuntu, `yum autoremove -y` on RHEL, `pacman -Rns $(pacman -Qdtq)` on Arch) at the end of the `is_update` phase when `DOTFILES_PROFILE_SWITCHED=true`. It removes all orphaned packages, not just dotfiles-related ones, which is the standard system-level cleanup after a desktop-session change.
+- On a `link`-only run, the linker still performs the symlink and hook cleanup but the package phase is skipped. The user is reminded to run `install --profile <new>` to also clean packages.
 - The state file path honours `XDG_DATA_HOME` when set; test harnesses must pass `XDG_DATA_HOME` explicitly to avoid polluting the real user home.
 
 ## Architecture support

@@ -60,6 +60,33 @@ function ensure_zsh_default_shell() {
 	fi
 }
 
+# Remove system packages that are no longer needed after a profile switch.
+# Non-fatal: a failure prints a warning and lets the caller decide.
+function run_autoremove() {
+	print_info "Removing orphaned packages left by the previous profile"
+	case "$(whichdistro)" in
+		debian)
+			run_cmd sudo env DEBIAN_FRONTEND=noninteractive apt-get autoremove -y
+			;;
+		redhat)
+			run_cmd sudo yum autoremove -y
+			;;
+		arch)
+			local orphans
+			orphans=$(pacman -Qdtq 2>/dev/null) || true
+			if [[ -n "$orphans" ]]; then
+				# shellcheck disable=SC2086
+				run_cmd sudo pacman -Rns $orphans --noconfirm
+			else
+				print_notice "No orphaned packages to remove"
+			fi
+			;;
+		*)
+			print_warning "Package autoremove not supported on this distro; run manually if needed"
+			;;
+	esac
+}
+
 #--------------------------------------------------------------#
 ##          main                                              ##
 #--------------------------------------------------------------#
@@ -208,6 +235,13 @@ function main() {
 		print_info "$(basename "${BASH_SOURCE[0]:-$0}") link success!!!"
 		print_info "#####################################################"
 		print_info ""
+
+		# Link-only run: no package phase will follow, so if a profile switch was
+		# detected remind the user to run 'install' to also remove orphaned packages.
+		if [[ "${DOTFILES_PROFILE_SWITCHED:-false}" == "true" && "$is_update" != "true" ]]; then
+			print_notice "Profile switched (link only). To also remove orphaned packages, run:"
+			print_notice "  $(basename "${BASH_SOURCE[0]:-$0}") install --profile $DOTFILES_PROFILE"
+		fi
 	fi
 
 	if [[ "$is_update" = true ]]; then
@@ -226,6 +260,11 @@ function main() {
 			fi
 			run_cmd ln -snf "$bin_file" "$HOME/.local/bin/"
 		done
+
+		# After a profile switch remove packages that are no longer needed.
+		if [[ "${DOTFILES_PROFILE_SWITCHED:-false}" == "true" ]]; then
+			run_autoremove || print_warning "Package autoremove failed; run manually if needed"
+		fi
 	fi
 
 	print_info ""
