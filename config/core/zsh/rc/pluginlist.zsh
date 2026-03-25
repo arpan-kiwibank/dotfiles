@@ -219,6 +219,7 @@ zinit wait'1' lucid \
 
 zinit wait'1' lucid \
 	from"gh-r" as"program" mv'*tealdeer* -> tldr' \
+	atclone'chmod +x tldr' atpull'chmod +x tldr' \
 	light-mode for @tealdeer-rs/tealdeer
 if [ "$ZSHRC_BENCH" != "true" ]; then
 	zinit ice wait'1' lucid as"completion" mv'zsh_tealdeer -> _tldr'
@@ -262,6 +263,7 @@ zinit wait'1' lucid \
 zinit wait'1' lucid \
 	from"gh-r" as"program" \
 	mv'mocword* -> mocword' \
+	atclone'chmod +x mocword' atpull'chmod +x mocword' \
 	atload"source $ZHOMEDIR/rc/pluginconfig/mocword_atload.zsh" \
 	light-mode for @high-moctane/mocword
 
@@ -276,6 +278,7 @@ zinit wait'1' lucid \
 zinit wait'1' lucid \
 	from"gh-r" as"program" \
 	mv'mise-* -> mise' \
+	atclone'chmod +x mise' atpull'chmod +x mise' \
 	atload"source $ZHOMEDIR/rc/pluginconfig/mise_atload.zsh" \
 	light-mode for @jdx/mise
 
