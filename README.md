@@ -101,14 +101,19 @@ The previously-active profile is recorded in `~/.local/share/dotfiles/active-pro
 
 ## Update harness
 
-Runs the `update` path with mocked package, download, and archive commands in a temporary HOME:
+Runs the full update pipeline with mocked package managers, download commands, and archive tools in a sandboxed temporary `$HOME`:
 
 ```bash
 ./scripts/test-update-harness.sh              # both profiles
 ./scripts/test-update-harness.sh hypr-minimal
 ./scripts/test-update-harness.sh full
 ./scripts/test-update-harness.sh --keep       # keep temp dir on success
+./scripts/test-update-harness.sh --docker     # + in-container distro tests
 ```
+
+The harness verifies: package installs dispatched correctly, local-bin symlinks created, idempotent re-run fast-path, active-profile state file written, and the full profile-switch path (unlink removed entries → autoremove).
+
+The `--docker` flag additionally runs `scripts/test-docker-distro.sh` inside `fedora:latest`, `archlinux:latest`, and `debian:stable-slim` — verifying distro detection, bash syntax compatibility, and correct package manager dispatch on each platform. Requires Docker. Skips gracefully if Docker is not available.
 
 ## Bare metal Linux
 
@@ -138,11 +143,15 @@ bash scripts/nvim.sh
 
 ## Docker (testing / CI)
 
-Docker runs as root — `sudo` is a no-op. Fedora and Arch base images include bash and work without a package install step. Run the harness for a quick cross-distro check:
+Docker runs as root — `sudo` is a no-op. Fedora and Arch base images include bash and work without additional setup.
+
+Run the harness with `--docker` to test all three supported distro families in containers:
 
 ```bash
-./scripts/test-update-harness.sh
+./scripts/test-update-harness.sh --docker
 ```
+
+This mounts the repo read-only and runs `scripts/test-docker-distro.sh` inside each container. Nothing is actually installed — all package managers and download tools are stubbed. Images are pulled on first run (~70–150 MB each, then cached).
 
 ## WSL rebuild checklist
 
@@ -191,6 +200,7 @@ Docker runs as root — `sudo` is a no-op. Fedora and Arch base images include b
 
 ## Notes
 
-- `config/core/Code/_install.sh` and `config/core/Code - Insiders/_install.sh` run as installer hooks instead of plain directory symlinking.
+- `config/core/Code/_install.sh` and `config/core/Code - Insiders/_install.sh` run as installer hooks instead of plain directory symlinking. On a profile switch, `unlink_hook_entry()` cleans up these internal symlinks automatically.
 - `.linkignore` entries are honoured when they match a manifest entry or destination basename.
+- The active profile is persisted in `~/.local/share/dotfiles/active-profile` (XDG_DATA_HOME-aware). `setup.sh` reads this on every run and performs cleanup automatically when the profile changes.
 
