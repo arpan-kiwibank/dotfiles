@@ -1,2 +1,5 @@
 [settings]
-experimental = false
+# Auto-install missing tools on exec (e.g. when entering a project dir)
+not_found_auto_install = true
+# Respect legacy version files (.nvmrc, .ruby-version, .python-version, etc.)
+legacy_version_file = true
