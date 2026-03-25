@@ -72,6 +72,10 @@ When a user switches from one profile to another (e.g. `full` → `hypr-minimal`
 
 **Important constraints:**
 - Entries that use `_install.sh` hooks (e.g. `config/core/Code/`) are now handled automatically: `unlink_hook_entry()` scans the destination directory for any symlinks whose resolved path falls inside the old entry's source directory, and removes them. Empty directories left behind are also removed. This covers any hook that follows the `$dest_dir/<basename>/...` convention.
+- `purge_switch_residues()` in `home-dir.sh` runs immediately after `unlink_removed_entries()`. For every entry that was in the old profile but not the new one, it:
+  - Deletes the zsh compdump (`$ZDOTDIR/.zcompdump*` and `$ZCACHEDIR/.zcompdump*`) so stale completion entries from removed tools are not loaded on next zsh start.
+  - Removes `$XDG_CACHE_HOME/<basename>/` for each removed entry if the directory exists.
+  - Removes any zinit plugin directory under `$ZDATADIR/zinit/plugins/` whose name matches `*---<basename>` or `*---<basename>.zsh` (e.g. `knqyf263---pet`, `yuki-yano---zeno.zsh`).
 - `run_autoremove()` in `initiate.sh` calls the distro-specific package autoremove (`apt-get autoremove -y` on Debian/Ubuntu, `yum autoremove -y` on RHEL, `pacman -Rns $(pacman -Qdtq)` on Arch) at the end of the `is_update` phase when `DOTFILES_PROFILE_SWITCHED=true`. It removes all orphaned packages, not just dotfiles-related ones, which is the standard system-level cleanup after a desktop-session change.
 - On a `link`-only run, the linker still performs the symlink and hook cleanup but the package phase is skipped. The user is reminded to run `./setup.sh --profile <new>` to trigger the full switch including autoremove. (`setup.sh` is the public interface for all user-facing profile operations; `initiate.sh` sub-commands are internal/power-user.)
 - The state file path honours `XDG_DATA_HOME` when set; test harnesses must pass `XDG_DATA_HOME` explicitly to avoid polluting the real user home.
@@ -125,3 +129,5 @@ The in-container test verifies:
 - `whichdistro()` returns the right string (`redhat`, `arch`, `debian`) for each base image
 - Bash syntax compatibility with the distro's default bash version
 - `checkinstall` dispatches to `yum`/`dnf`, `pacman`, or `apt-get` respectively
+
+**Harness environment isolation**: the switch test passes `XDG_CONFIG_HOME="$home_dir/.config"` alongside `XDG_CACHE_HOME` and `XDG_DATA_HOME` to prevent the real user environment from leaking into path calculations inside `purge_switch_residues()`. Any new test that exercises residue/cache cleanup must also pass `XDG_CONFIG_HOME`.

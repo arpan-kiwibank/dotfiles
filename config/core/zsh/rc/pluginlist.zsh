@@ -149,7 +149,7 @@ zinit wait'2' lucid \
 	atinit"source $ZHOMEDIR/rc/pluginconfig/zsh-fzf-widgets_atinit.zsh" \
 	light-mode for @amaya382/zsh-fzf-widgets
 
-if [ "$ZSHRC_BENCH" != "true" ]; then
+if [[ "$ZSHRC_BENCH" != "true" && -L "${XDG_CONFIG_HOME:-$HOME/.config}/zeno" ]]; then
 	zinit wait'2' lucid silent blockf depth"1" \
 		atclone'deno cache --no-check ./src/cli.ts' \
 		atpull'%atclone' \
@@ -299,14 +299,16 @@ zinit wait'1' lucid \
 
 
 
-# snippet
+# snippet — only load pet when its config is linked (i.e. active profile includes it)
+if [[ -L "${XDG_CONFIG_HOME:-$HOME/.config}/pet" ]]; then
 [[ $- == *i* ]] && stty -ixon
 zinit wait'1' lucid blockf nocompletions \
-	from"gh-r" as"program" pick"pet" bpick'*linux_amd64.tar.gz' \
-	atclone'chown -R $(id -nu):$(id -ng) .; zinit creinstall -q knqyf263/pet' \
-	atpull'%atclone' \
-	atload"source $ZHOMEDIR/rc/pluginconfig/pet_atload.zsh" \
-	for @knqyf263/pet
+        from"gh-r" as"program" pick"pet" bpick'*linux_amd64.tar.gz' \
+        atclone'chown -R $(id -nu):$(id -ng) .; zinit creinstall -q knqyf263/pet' \
+        atpull'%atclone' \
+        atload"source $ZHOMEDIR/rc/pluginconfig/pet_atload.zsh" \
+        for @knqyf263/pet
+fi
 
 # etc #
 zinit wait'1' lucid \

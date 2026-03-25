@@ -231,6 +231,62 @@ function unlink_hook_entry() {
 	fi
 }
 
+# After a profile switch, purge tool-specific caches, stale zsh state, and
+# zinit plugin data for entries that are no longer part of the new profile.
+# Safe to re-run: every removal is guarded by an existence check.
+function purge_switch_residues() {
+        local dotfiles_dir="$1"
+        local old_profile="$2"
+        local new_entries_arr="$3"
+        local -n purge_new_ref="$new_entries_arr"
+
+        local -a old_entries=()
+        load_profile_entries "$dotfiles_dir" "$old_profile" old_entries
+
+        local -a removed_basenames=()
+        local old_entry
+        for old_entry in "${old_entries[@]}"; do
+                contains_exact "$old_entry" "${purge_new_ref[@]}" && continue
+                removed_basenames+=("$(basename "$old_entry")")
+        done
+
+        [[ ${#removed_basenames[@]} -eq 0 ]] && return 0
+
+        # 1. Zsh compdump — stale completion entries from removed tools; rebuilt on
+        #    the next zsh start. Both the config-dir and cache-dir locations are covered.
+        local zdotdir="${ZDOTDIR:-${XDG_CONFIG_HOME:-$HOME/.config}/zsh}"
+        local zcachedir="${XDG_CACHE_HOME:-$HOME/.cache}/zsh"
+        local dump
+        for dump in "$zdotdir/.zcompdump" "$zdotdir/.zcompdump.zwc" \
+                    "$zcachedir/.zcompdump" "$zcachedir/.zcompdump.zwc"; do
+                if [[ -f "$dump" ]]; then
+                        print_notice "Removing stale zsh compdump: $dump"
+                        run_cmd command rm -f "$dump"
+                fi
+        done
+
+        # 2. Per-tool XDG cache dirs and zinit plugin dirs for each removed entry.
+        local zdatadir="${XDG_DATA_HOME:-$HOME/.local/share}/zsh"
+        local zinit_plugin_dir="$zdatadir/zinit/plugins"
+        local name
+        for name in "${removed_basenames[@]}"; do
+                local cache_dir="${XDG_CACHE_HOME:-$HOME/.cache}/$name"
+                if [[ -d "$cache_dir" ]]; then
+                        print_notice "Removing cache dir: $cache_dir"
+                        run_cmd command rm -rf "$cache_dir"
+                fi
+
+                if [[ -d "$zinit_plugin_dir" ]]; then
+                        local pdir
+                        while IFS= read -r -d '' pdir; do
+                                print_notice "Removing zinit plugin data: $pdir"
+                                run_cmd command rm -rf "$pdir"
+                        done < <(command find "$zinit_plugin_dir" -maxdepth 1 -mindepth 1 -type d \
+                                \( -name "*---$name" -o -name "*---${name}.zsh" \) -print0 2>/dev/null)
+                fi
+        done
+}
+
 # Fast pre-scan check: returns 0 if the manifest entry is already correctly linked
 # (or is a WSL-skipped desktop entry), 1 if it needs action.
 function is_entry_already_linked() {
@@ -369,6 +425,7 @@ function link_to_homedir() {
 	if [[ -n "$prev_profile" && "$prev_profile" != "$profile" ]]; then
 		print_notice "Profile switch: $prev_profile → $profile"
 		unlink_removed_entries "$dotfiles_dir" "$prev_profile" manifest_entries
+		purge_switch_residues "$dotfiles_dir" "$prev_profile" manifest_entries
 		export DOTFILES_PROFILE_SWITCHED=true
 	fi
 

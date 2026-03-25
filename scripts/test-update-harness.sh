@@ -266,16 +266,28 @@ HXMOCK
 	chmod +x "$mock_dir/hx"
 
 	# ---- Step 1: initial full install (link only, no package update needed) ----
-	PATH="$mock_dir:$PATH" HOME="$home_dir" XDG_CACHE_HOME="$cache_dir" XDG_DATA_HOME="$home_dir/.local/share" \
+	PATH="$mock_dir:$PATH" HOME="$home_dir" XDG_CACHE_HOME="$cache_dir" XDG_DATA_HOME="$home_dir/.local/share" XDG_CONFIG_HOME="$home_dir/.config" \
 		bash "$dotfiles_dir/scripts/initiate.sh" link --profile full > "$tmp_root/run-full.log" 2>&1 \
 		|| { echo "[FAIL] switch-test: initial full link failed"; cat "$tmp_root/run-full.log" 1>&2; exit 1; }
+
+	# ---- Pre-populate residues that the profile switch should clean up ----
+	# Fake zsh compdump (zdotdir = $home_dir/.config/zsh when ZDOTDIR is unset)
+	local fake_zdotdir="$home_dir/.config/zsh"
+	mkdir -p "$fake_zdotdir"
+	touch "$fake_zdotdir/.zcompdump"
+	# Fake XDG cache dirs for removed optional tools
+	mkdir -p "$cache_dir/pet" "$cache_dir/zk" "$cache_dir/gitui"
+	# Fake zinit plugin dir for pet
+	local fake_zinit_plugin_dir="$home_dir/.local/share/zsh/zinit/plugins"
+	mkdir -p "$fake_zinit_plugin_dir/knqyf263---pet"
+	touch "$fake_zinit_plugin_dir/knqyf263---pet/pet"
 
 	# ---- Step 2: switch to 'hypr-minimal' via install (exercises autoremove) ----
 	# Using 'install' rather than 'link' so the full switch path runs:
 	#   link (detects switch, unlinks removed entries, sets DOTFILES_PROFILE_SWITCHED)
 	#   → update (packages, helix, nvim, then autoremove at end)
 	: > "$tmp_root/commands.log"
-	PATH="$mock_dir:$PATH" HOME="$home_dir" XDG_CACHE_HOME="$cache_dir" XDG_DATA_HOME="$home_dir/.local/share" \
+	PATH="$mock_dir:$PATH" HOME="$home_dir" XDG_CACHE_HOME="$cache_dir" XDG_DATA_HOME="$home_dir/.local/share" XDG_CONFIG_HOME="$home_dir/.config" \
 		bash "$dotfiles_dir/scripts/initiate.sh" install --profile hypr-minimal > "$tmp_root/run-switch.log" 2>&1 \
 		|| { echo "[FAIL] switch-test: profile switch install failed"; cat "$tmp_root/run-switch.log" 1>&2; exit 1; }
 
@@ -292,6 +304,23 @@ HXMOCK
 	grep -q "autoremove" "$tmp_root/commands.log" \
 		|| fail "switch-test: expected autoremove command in commands.log after profile switch"
 	echo "  profile switch: autoremove called: OK"
+
+	# Compdump should have been removed (stale completions from old profile)
+	[[ ! -f "$fake_zdotdir/.zcompdump" ]] \
+		|| fail "switch-test: zsh compdump was not removed after profile switch"
+	echo "  profile switch: zsh compdump cleaned: OK"
+
+	# Tool cache dirs for removed optional entries should be gone
+	[[ ! -d "$cache_dir/pet" ]] \
+		|| fail "switch-test: cache dir for 'pet' was not removed after profile switch"
+	[[ ! -d "$cache_dir/zk" ]] \
+		|| fail "switch-test: cache dir for 'zk' was not removed after profile switch"
+	echo "  profile switch: tool cache dirs cleaned: OK"
+
+	# Zinit plugin dir for removed tool should be gone
+	[[ ! -d "$fake_zinit_plugin_dir/knqyf263---pet" ]] \
+		|| fail "switch-test: zinit plugin dir for 'pet' was not removed after profile switch"
+	echo "  profile switch: zinit plugin data cleaned: OK"
 
 	echo "[PASS] profile-switch-test root=$tmp_root"
 
