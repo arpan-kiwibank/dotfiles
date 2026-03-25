@@ -45,7 +45,6 @@ alias gre='grep -H -n -I --color=auto'
 # vi
 alias vi="$EDITOR"
 alias sv="sudo $EDITOR"
-alias hx="helix"
 
 ## development ##
 alias py='python'
