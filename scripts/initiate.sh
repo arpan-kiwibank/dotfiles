@@ -16,6 +16,49 @@ function helpmsg() {
 	print_default ""
 }
 
+function ensure_zsh_default_shell() {
+	if ! command -v zsh >/dev/null 2>&1; then
+		print_warning "zsh is not installed yet; skipping default-shell step"
+		return 0
+	fi
+
+	if ! command -v chsh >/dev/null 2>&1; then
+		print_warning "chsh command not available; skipping default-shell step"
+		return 0
+	fi
+
+	local current_shell
+	if command -v getent >/dev/null 2>&1; then
+		current_shell=$(getent passwd "$(id -un)" | cut -d: -f7)
+	else
+		current_shell=$(grep "^$(id -un):" /etc/passwd | cut -d: -f7)
+	fi
+	local zsh_path
+	zsh_path=$(command -v zsh)
+
+	if [[ "$current_shell" == "$zsh_path" ]]; then
+		print_notice "Default shell already set to zsh"
+		return 0
+	fi
+
+	if [[ -r /etc/shells ]] && ! grep -qx "$zsh_path" /etc/shells; then
+		print_warning "$zsh_path is not listed in /etc/shells; skipping default-shell step"
+		return 0
+	fi
+
+	if is_dry_run; then
+		print_notice "[dry-run] would change default shell to $zsh_path"
+		return 0
+	fi
+
+	if run_cmd chsh -s "$zsh_path" "$(id -un)"; then
+		print_success "Default shell changed to zsh"
+	else
+		print_warning "Could not change default shell to zsh automatically"
+		print_notice "Run manually: chsh -s $zsh_path $(id -un)"
+	fi
+}
+
 #--------------------------------------------------------------#
 ##          main                                              ##
 #--------------------------------------------------------------#
@@ -143,6 +186,8 @@ function main() {
 
 	if [[ "$is_update" = true ]]; then
 		source "$current_dir"/basic-packages.sh
+		ensure_zsh_default_shell
+		source "$current_dir"/helix.sh
 		source "$current_dir"/nvim.sh
 		run_cmd mkdir -p "$HOME/.local/bin"
 		if compgen -G "$dotfiles_dir/local-bin/*" >/dev/null; then
