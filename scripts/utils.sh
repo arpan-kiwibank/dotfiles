@@ -112,7 +112,9 @@ function whichdistro() {
 	elif [ -f /etc/arch-release ]; then
 		echo arch
 		return
-
+	elif [ -f /etc/alpine-release ]; then
+		echo alpine
+		return
 	fi
 }
 
@@ -153,6 +155,11 @@ function ensure_sudo() {
 function checkinstall() {
 	local distro
 	distro=$(whichdistro)
+	if [[ $distro == "alpine" ]]; then
+		print_error "Alpine Linux is not supported by this bootstrap."
+		print_notice "Supported distros: Debian/Ubuntu, Fedora/RHEL/CentOS, Arch Linux."
+		exit 1
+	fi
 	if [[ $distro == "redhat" ]]; then
 		run_cmd sudo yum clean all
 		# EPEL + extra repos only needed on RHEL/CentOS, not Fedora

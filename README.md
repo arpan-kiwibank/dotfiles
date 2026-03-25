@@ -105,6 +105,7 @@ Fully supported distros, detected automatically via `/etc/os-release`:
 | RHEL / CentOS 8 | `redhat` | `sudo dnf` + `epel-release` + `powertools` |
 | RHEL / CentOS 9+ | `redhat` | `sudo dnf` + `epel-release` + `crb` |
 | Arch Linux | `arch` | `sudo pacman` |
+| Alpine | `alpine` | ❌ not supported — exits with a clear error |
 
 **Prerequisites on bare metal** (install manually before running `./setup.sh`):
 

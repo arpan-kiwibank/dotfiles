@@ -25,9 +25,9 @@ Call `ensure_sudo` once at the start of any flow that will invoke `checkinstall`
 
 Never call `sudo` directly in new code — use `run_cmd sudo <cmd>` so dry-run suppresses it. The test harness mocks `sudo` with a passthrough; `-v` and `-n` are handled as no-ops.
 
-`whichdistro()` in `utils.sh` maps `/etc/*-release` files to: `debian`, `redhat`, `arch`. Use these three values everywhere.
+`whichdistro()` in `utils.sh` maps `/etc/*-release` files to: `debian`, `redhat`, `arch`, `alpine`. Use these four values everywhere.
 
-`checkinstall()` dispatches to the correct package manager. Always use `checkinstall` instead of calling `apt-get`/`yum`/`pacman` directly — it handles `sudo`, RHEL EPEL/CRB setup, and package name aliases (e.g. `python-pip` → `python3-pip` on Debian).
+`checkinstall()` dispatches to the correct package manager. Always use `checkinstall` instead of calling `apt-get`/`yum`/`pacman` directly — it handles `sudo`, RHEL EPEL/CRB setup, and package name aliases (e.g. `python-pip` → `python3-pip` on Debian). Alpine is detected but **not supported**: `checkinstall` exits immediately with a clear error message.
 
 ## is_wsl() behaviour
 
