@@ -131,6 +131,7 @@ function main() {
 			run_cmd chmod 700 "$HOME/.config/zsh" 2>/dev/null || true
 			run_cmd chmod 700 "$HOME/.config/zsh/completions.local" 2>/dev/null || true
 			run_cmd chmod 644 "$HOME/.config/zsh/completions.local"/* 2>/dev/null || true
+			run_cmd chmod 644 "$HOME/.config/zsh/completions.local"/.[^.]* 2>/dev/null || true
 		fi
 		
 		print_info ""
