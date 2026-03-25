@@ -217,10 +217,8 @@ zinit wait'1' lucid \
 	atload"alias rm='trash put'" \
 	light-mode for @oberblastmeister/trashy
 
-zinit wait'1' lucid blockf nocompletions \
-	from"gh-r" as"program" bpick'*musl*' mv'*tealdeer* -> tldr' \
-	atclone'chown -R $(id -nu):$(id -ng) .' \
-	atpull'%atclone' \
+zinit wait'1' lucid \
+	from"gh-r" as"program" mv'*tealdeer* -> tldr' \
 	light-mode for @tealdeer-rs/tealdeer
 if [ "$ZSHRC_BENCH" != "true" ]; then
 	zinit ice wait'1' lucid as"completion" mv'zsh_tealdeer -> _tldr'
