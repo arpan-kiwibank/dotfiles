@@ -29,6 +29,48 @@ cd dotfiles
 - `full` (default): links the active stack, language-manager configs, and misc config files.
 - `hypr-minimal`: links the active stack with a reduced language-manager set.
 
+## What gets installed
+
+**System packages** (via distro package manager):
+`zsh`, `git`, `tmux`, `curl`, `wget`, `gawk`, `jq`, `unzip`, `sqlite`, `gettext`, `procps`, `python3-pip`, `gcc`
+
+**Binaries** (downloaded from GitHub releases by bootstrap scripts):
+
+| Tool | Command | Purpose |
+|---|---|---|
+| Neovim nightly | `nvim` | Text editor — nightly build, version-checked on each run |
+| Helix | `hx` | Modal terminal editor |
+
+**Shell tools** (installed by [zinit](https://github.com/zdharma-continuum/zinit) on first zsh load):
+
+| Tool | Command | Purpose |
+|---|---|---|
+| zoxide | `z` | Smart `cd` replacement with frecency |
+| fzf | — | Fuzzy finder; powers `Ctrl-R`, `Ctrl-T`, `Alt-C` |
+| eza | `ls` | Modern `ls` with icons and git status |
+| ripgrep | `rg` | Fast recursive grep |
+| fd | `fd` | Fast `find` replacement |
+| bat | `cat` | `cat` with syntax highlighting |
+| delta | `delta` | Syntax-highlighted git diff pager |
+| trashy | `rm` | Safe delete — moves to trash |
+| tealdeer | `tldr` | Fast offline tldr pages |
+| procs | `procs` | Modern `ps` replacement |
+| mise | `mise` | Polyglot version manager (node, python, ruby…) |
+| direnv | `direnv` | Auto-load `.envrc` per directory |
+| gh | `gh` | GitHub CLI |
+| ghq | `ghq` | Structured git repo manager |
+| pet | `pet` | CLI snippet manager |
+| mmv | `mmv` | Multi-file rename |
+| mocword | `mocword` | Offline word prediction |
+| translate-shell | `trans` | Terminal translator |
+
+**Custom local scripts** (linked to `~/.local/bin`):
+
+| Script | Purpose |
+|---|---|
+| `alarm` | Countdown alarm — fires a desktop notification (Windows toast in WSL, `notify-send` on bare metal) |
+| `hyprland-wrap.sh` | Hyprland launcher wrapper (bare metal only, skipped in WSL) |
+
 > **WSL note:** `config/desktop/**` entries are automatically skipped in WSL2 (no DRM/GPU access). Pass `--allow-desktop` to override.
 
 ## Dry-run

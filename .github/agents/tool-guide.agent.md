@@ -142,11 +142,12 @@ Never scan unrelated files. Limit reads to the pluginconfig file for that tool a
 | **translate-shell** | soimort/translate-shell | `trans` | Translate text from the terminal: `trans en:ja "hello world"` |
 | **mocword** | high-moctane/mocword | `mocword` | Offline word prediction/completion for Japanese input |
 
-### Neovim
+### Custom Local Scripts (`~/.local/bin`)
 
-| Tool | Repo | Command | What it does |
-|------|------|---------|--------------|
-| **neovim** | neovim/neovim | `nvim` | Nightly neovim; config lives in `config/core/nvim/` |
+| Script | Command | What it does |
+|--------|---------|--------------|
+| **alarm** | `alarm` | Countdown alarm. Usage: `alarm 30m`, `alarm 10:30`, `alarm 2h "message"`. Fires a Windows toast in WSL (via PowerShell), `notify-send` on bare metal, or terminal bell as fallback. `hyprland-wrap.sh` is skipped in WSL. |
+| **hyprland-wrap.sh** | `hyprland-wrap.sh` | Hyprland launcher wrapper — sources `environment.d` via the systemd generator then `exec Hyprland`. Bare metal only. |
 
 ---
 
