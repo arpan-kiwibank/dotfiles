@@ -2,7 +2,7 @@
 
 ## Overview
 
-This repository bootstraps a Linux workspace with a profile-driven linker and a repository layout that separates active configs from optional and historical ones.
+This repository bootstraps a Linux workspace with a profile-driven linker and a repository layout that separates active configs from optional ones.
 
 Supported stack:
 
