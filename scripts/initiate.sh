@@ -237,10 +237,11 @@ function main() {
 		print_info ""
 
 		# Link-only run: no package phase will follow, so if a profile switch was
-		# detected remind the user to run 'install' to also remove orphaned packages.
+		# detected remind the user to use setup.sh for a full switch including
+		# orphaned package removal.
 		if [[ "${DOTFILES_PROFILE_SWITCHED:-false}" == "true" && "$is_update" != "true" ]]; then
-			print_notice "Profile switched (link only). To also remove orphaned packages, run:"
-			print_notice "  $(basename "${BASH_SOURCE[0]:-$0}") install --profile $DOTFILES_PROFILE"
+			print_notice "Profile switched (link only). To also remove orphaned packages, re-run via:"
+			print_notice "  ./setup.sh --profile $DOTFILES_PROFILE"
 		fi
 	fi
 

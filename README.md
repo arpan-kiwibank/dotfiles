@@ -29,6 +29,24 @@ cd dotfiles
 - `full` (default): links the active stack, language-manager configs, and misc config files.
 - `hypr-minimal`: links the active stack with a reduced language-manager set.
 
+## Switching profiles
+
+To move from one profile to another, just re-run `setup.sh` with the new profile:
+
+```bash
+./setup.sh --profile hypr-minimal   # switching from full
+./setup.sh --profile full            # switching back
+```
+
+This performs the complete switch in one step:
+
+1. **Unlinks** config symlinks that belong only to the old profile.
+2. **Cleans up** entries managed by `_install.sh` hooks (e.g. VS Code settings).
+3. **Links** the new profile's entries into `$HOME`.
+4. **Removes orphaned packages** via the distro's autoremove mechanism (`apt-get autoremove`, `yum autoremove`, or `pacman -Rns`).
+
+The previously-active profile is recorded in `~/.local/share/dotfiles/active-profile` so the switch is detected automatically — no manual bookkeeping needed.
+
 ## What gets installed
 
 **System packages** (via distro package manager):
