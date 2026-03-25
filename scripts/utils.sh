@@ -118,6 +118,40 @@ function whichdistro() {
 	fi
 }
 
+function ensure_sudo() {
+	# No-op when already root (Docker / CI) or in dry-run mode — no password needed.
+	if [[ "$EUID" -eq 0 ]] || is_dry_run; then
+		return 0
+	fi
+
+	if ! command -v sudo >/dev/null 2>&1; then
+		print_error "Bootstrap needs to install system packages but 'sudo' is not available."
+		print_notice "Run as root, or install sudo first (e.g. su -c 'apt-get install sudo')."
+		exit 1
+	fi
+
+	print_info ""
+	print_info "Bootstrap will install system packages and needs elevated privileges."
+	print_notice "You will be prompted for your password once. Sudo access is then kept\nactive for the duration of bootstrap so you are not asked again."
+	print_info ""
+
+	if ! sudo -v 2>/dev/null; then
+		print_error "Could not obtain sudo credentials. Aborting."
+		exit 1
+	fi
+
+	# Background keepalive: refresh the sudo credential every 30 s so that
+	# slow downloads (neovim nightly, helix release) do not expire the ticket.
+	(
+		while kill -0 "$$" 2>/dev/null; do
+			sudo -n true 2>/dev/null || break
+			sleep 30
+		done
+	) &
+	_DOTFILES_SUDO_KEEPALIVE=$!
+	trap 'kill "$_DOTFILES_SUDO_KEEPALIVE" 2>/dev/null; trap - EXIT INT TERM' EXIT INT TERM
+}
+
 function checkinstall() {
 	local distro
 	distro=$(whichdistro)

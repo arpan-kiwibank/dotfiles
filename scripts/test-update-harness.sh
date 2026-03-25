@@ -75,10 +75,15 @@ function run_profile() {
 	create_mock_command curl "$mock_dir" "$tmp_root"
 	create_mock_command chsh "$mock_dir" "$tmp_root"
 
-	# sudo mock: passes through to its arguments so PATH-mocked commands are still found
+	# sudo mock: handle -v (credential check) and -n true (keepalive) as no-ops;
+	# pass everything else through so PATH-mocked commands are still reachable.
 	cat > "$mock_dir/sudo" <<SUDOMOCK
 #!/usr/bin/env bash
 printf 'sudo %s\n' "\$*" >> '$tmp_root/commands.log'
+case "\$1" in
+    -v)       exit 0 ;;   # ensure_sudo: sudo -v credential validation
+    -n)       exit 0 ;;   # ensure_sudo: sudo -n true keepalive check
+esac
 exec "\$@"
 SUDOMOCK
 	chmod +x "$mock_dir/sudo"
