@@ -218,9 +218,14 @@ function main() {
 		source "$current_dir"/nvim.sh
 		neovim_nightly || print_warning "Neovim nightly install failed; run scripts/nvim.sh manually to retry"
 		run_cmd mkdir -p "$HOME/.local/bin"
-		if compgen -G "$dotfiles_dir/local-bin/*" >/dev/null; then
-			run_cmd ln -snf "$dotfiles_dir"/local-bin/* "$HOME/.local/bin/"
-		fi
+		for bin_file in "$dotfiles_dir"/local-bin/*; do
+			[[ -e "$bin_file" ]] || continue
+			if [[ "$(basename "$bin_file")" == "hyprland-wrap.sh" && "${DOTFILES_SKIP_DESKTOP:-false}" == "true" ]]; then
+				print_notice "WSL (skip desktop): local-bin/hyprland-wrap.sh"
+				continue
+			fi
+			run_cmd ln -snf "$bin_file" "$HOME/.local/bin/"
+		done
 	fi
 
 	print_info ""

@@ -115,7 +115,13 @@ TARMOCK
 	assert_file_contains "$tmp_root/commands.log" "tar -xzf"
 	assert_file_contains "$tmp_root/commands.log" "apt-get install -y gcc"
 	assert_symlink_target "$home_dir/.local/bin/alarm" "$dotfiles_dir/local-bin/alarm"
-	assert_symlink_target "$home_dir/.local/bin/hyprland-wrap.sh" "$dotfiles_dir/local-bin/hyprland-wrap.sh"
+	# hyprland-wrap.sh is skipped when DOTFILES_SKIP_DESKTOP is true (e.g. WSL)
+	if grep -q "WSL (skip desktop): local-bin/hyprland-wrap.sh" "$tmp_root/run.log" 2>/dev/null; then
+		[[ ! -e "$home_dir/.local/bin/hyprland-wrap.sh" ]] \
+			|| fail "hyprland-wrap.sh should not be linked in WSL"
+	else
+		assert_symlink_target "$home_dir/.local/bin/hyprland-wrap.sh" "$dotfiles_dir/local-bin/hyprland-wrap.sh"
+	fi
 
 	echo "[PASS] profile=$profile root=$tmp_root"
 	echo "  commands: $(sed -n '1,6p' "$tmp_root/commands.log" | paste -sd ';' -)"
