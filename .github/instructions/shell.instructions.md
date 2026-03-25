@@ -19,7 +19,7 @@ description: "Use when: changing zsh startup, zinit plugins, shell functions, co
 
 `DOTFILES_ACTIVE_PROFILE` is loaded at the top of `pluginlist.zsh` from the bootstrap state file (`${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/active-profile`), defaulting to `full` when the file does not exist (first run before bootstrap).
 
-All zinit blocks tied to optional tools (entries in `config/optional/` that the `full` profile links but `hypr-minimal` does not) **must** live inside the guarded block:
+All zinit blocks tied to optional tools (entries in `config/optional/` that the `full` profile links but `minimal` does not) **must** live inside the guarded block:
 
 ```zsh
 if [[ "$DOTFILES_ACTIVE_PROFILE" == "full" ]]; then
@@ -33,4 +33,4 @@ To add a new optional tool with a zinit integration:
 1. Add the config dir to `config/optional/<toolname>/`.
 2. Add `config/optional/<toolname>` to `profiles/full.list` (only).
 3. Add the zinit block inside the `if [[ "$DOTFILES_ACTIVE_PROFILE" == "full" ]]` section in `pluginlist.zsh`.
-4. Run the harness — `run_manifest_lint_test()` will catch it if you accidentally add it to `hypr-minimal.list` too.
+4. Run the harness — `run_manifest_lint_test()` will catch it if you accidentally add it to `minimal.list` too.

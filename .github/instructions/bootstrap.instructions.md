@@ -61,7 +61,7 @@ Every bootstrap phase is safe to re-run after a `git pull`. Key properties:
 
 ## Profile switching
 
-When a user switches from one profile to another (e.g. `full` → `hypr-minimal`), the linker:
+When a user switches from one profile to another (e.g. `full` → `minimal`), the linker:
 
 1. Reads the previously-active profile from `${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/active-profile`.
 2. Detects the mismatch and calls `unlink_removed_entries()`, which computes the diff between the old and new profile manifests and removes any symlink that:
@@ -76,7 +76,7 @@ When a user switches from one profile to another (e.g. `full` → `hypr-minimal`
   - Deletes the zsh compdump (`$ZDOTDIR/.zcompdump*` and `$ZCACHEDIR/.zcompdump*`) so stale completion entries from removed tools are not loaded on next zsh start.
   - Removes `$XDG_CACHE_HOME/<basename>/` for each removed entry if the directory exists.
   - Removes any zinit plugin directory under `$ZDATADIR/zinit/plugins/` whose name matches `*---<basename>` or `*---<basename>.zsh` (e.g. `knqyf263---pet`, `yuki-yano---zeno.zsh`).
-- `validate_no_optional_in_minimal()` in `home-dir.sh` aborts `link_to_homedir()` with an error if `profiles/hypr-minimal.list` contains any `config/optional/` entry. This is a hard-fail guard that catches accidental additions at link time as well as during development via the harness.
+- `validate_no_optional_in_minimal()` in `home-dir.sh` aborts `link_to_homedir()` with an error if `profiles/minimal.list` contains any `config/optional/` entry. This is a hard-fail guard that catches accidental additions at link time as well as during development via the harness.
 - `run_autoremove()` in `initiate.sh` calls the distro-specific package autoremove (`apt-get autoremove -y` on Debian/Ubuntu, `yum autoremove -y` on RHEL, `pacman -Rns $(pacman -Qdtq)` on Arch) at the end of the `is_update` phase when `DOTFILES_PROFILE_SWITCHED=true`. It removes all orphaned packages, not just dotfiles-related ones, which is the standard system-level cleanup after a desktop-session change.
 - On a `link`-only run, the linker still performs the symlink and hook cleanup but the package phase is skipped. The user is reminded to run `./setup.sh --profile <new>` to trigger the full switch including autoremove. (`setup.sh` is the public interface for all user-facing profile operations; `initiate.sh` sub-commands are internal/power-user.)
 - The state file path honours `XDG_DATA_HOME` when set; test harnesses must pass `XDG_DATA_HOME` explicitly to avoid polluting the real user home.
@@ -119,9 +119,9 @@ Neovim (`nvim.sh`) and Helix (`helix.sh`) detect `uname -m` and download:
 `scripts/test-update-harness.sh` mocks: `apt-get`, `yum`, `dnf`, `pacman`, `curl`, `tar` (smart: creates fake extracted dirs), `chsh`, `sudo` (passthrough exec so mocked commands remain reachable within sudo calls). Run it after any change to `initiate.sh`, `home-dir.sh`, `utils.sh`, `helix.sh`, or `nvim.sh`. The harness also asserts the active-profile state file is written correctly and verifies the full profile-switch path (link → detect switch → unlink removed entries → autoremove).
 
 `run_manifest_lint_test()` runs as part of the default harness (before the profile-switch test) and:
-1. **Static check**: asserts `hypr-minimal.list` has no `config/optional/` entries (fails the run if any are found).
+1. **Static check**: asserts `minimal.list` has no `config/optional/` entries (fails the run if any are found).
 2. **Coverage check**: warns about `config/optional/` directories in the repo that are not listed in `full.list`.
-3. **Dynamic guard check**: creates a temporary patched repo with a forbidden optional entry in `hypr-minimal.list` and asserts that `initiate.sh link --profile hypr-minimal` exits non-zero with an error mentioning `config/optional`.
+3. **Dynamic guard check**: creates a temporary patched repo with a forbidden optional entry in `minimal.list` and asserts that `initiate.sh link --profile minimal` exits non-zero with an error mentioning `config/optional`.
 
 ```bash
 ./scripts/test-update-harness.sh             # both profiles, local (debian-path mocks)

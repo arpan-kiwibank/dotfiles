@@ -1,5 +1,5 @@
 ---
-description: "Use when: reviewing full or hypr-minimal manifests, deciding what gets linked, auditing profile contents, or checking whether manifest changes also require script or README updates in this dotfiles repo."
+description: "Use when: reviewing full or minimal manifests, deciding what gets linked, auditing profile contents, or checking whether manifest changes also require script or README updates in this dotfiles repo."
 ---
 
 The task is:

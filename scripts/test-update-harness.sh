@@ -4,7 +4,7 @@ set -euo pipefail
 
 function helpmsg() {
 	echo "Usage: ${BASH_SOURCE[0]:-$0} [--keep] [--docker] [profile ...]" 1>&2
-	echo "  profile: full or hypr-minimal (default: both)" 1>&2
+	echo "  profile: full or minimal (default: both)" 1>&2
 	echo "  --keep:   keep temporary test directories even on success" 1>&2
 	echo "  --docker: also run in-container distro tests (requires docker daemon)" 1>&2
 }
@@ -56,21 +56,21 @@ function assert_symlink_target() {
 	[[ "$(readlink -f "$symlink_path")" == "$expected_target" ]] || fail "Unexpected target for $symlink_path"
 }
 
-# Static lint: hypr-minimal.list must not contain config/optional/ entries.
+# Static lint: minimal.list must not contain config/optional/ entries.
 # Also warns about any config/optional/ dirs in the repo that are absent from
 # full.list (so new optional tools don't silently become dead weight).
 function run_manifest_lint_test() {
 	local dotfiles_dir="$1"
 
-	# 1. hypr-minimal must have zero config/optional/ entries
+	# 1. minimal must have zero config/optional/ entries
 	local violations
 	violations=$(grep -v '^[[:space:]]*#\|^[[:space:]]*$' \
-		"$dotfiles_dir/profiles/hypr-minimal.list" \
+		"$dotfiles_dir/profiles/minimal.list" \
 		| grep '^config/optional/' || true)
 	if [[ -n "$violations" ]]; then
-		fail "manifest-lint: hypr-minimal.list has config/optional/ entries: $violations"
+		fail "manifest-lint: minimal.list has config/optional/ entries: $violations"
 	fi
-	echo "[PASS] manifest-lint: hypr-minimal.list: no config/optional/ entries"
+	echo "[PASS] manifest-lint: minimal.list: no config/optional/ entries"
 
 	# 2. Warn about repo optional dirs absent from full.list
 	local -a missing=()
@@ -88,27 +88,27 @@ function run_manifest_lint_test() {
 		echo "[PASS] manifest-lint: full.list: all config/optional/ dirs accounted for"
 	fi
 
-	# 3. Dynamic guard: bootstrap must abort when hypr-minimal.list has an optional entry.
+	# 3. Dynamic guard: bootstrap must abort when minimal.list has an optional entry.
 	#    Use a temp dir with a patched copy of the repo profiles.
 	local tmp_dir
 	tmp_dir=$(mktemp -d "${TMPDIR:-/tmp}/dotfiles-manifest-lint.XXXXXX")
 	cp -r "$dotfiles_dir" "$tmp_dir/dotfiles"
-	local patched_list="$tmp_dir/dotfiles/profiles/hypr-minimal.list"
+	local patched_list="$tmp_dir/dotfiles/profiles/minimal.list"
 	printf '\nconfig/optional/gitui\n' >> "$patched_list"
 
 	local tmp_home="$tmp_dir/home"
 	mkdir -p "$tmp_home"
 	local out
 	out=$(HOME="$tmp_home" XDG_DATA_HOME="$tmp_home/.local/share" \
-		bash "$tmp_dir/dotfiles/scripts/initiate.sh" link --profile hypr-minimal 2>&1) \
-		&& { rm -rf "$tmp_dir"; fail "manifest-lint: expected abort for hypr-minimal with optional entry, but command succeeded"; } \
+		bash "$tmp_dir/dotfiles/scripts/initiate.sh" link --profile minimal 2>&1) \
+		&& { rm -rf "$tmp_dir"; fail "manifest-lint: expected abort for minimal with optional entry, but command succeeded"; } \
 		|| true  # non-zero exit is expected
 	if ! printf '%s\n' "$out" | grep -q "config/optional"; then
 		rm -rf "$tmp_dir"
 		fail "manifest-lint: expected an error mentioning config/optional, got: $out"
 	fi
 	rm -rf "$tmp_dir"
-	echo "[PASS] manifest-lint: runtime guard aborts on hypr-minimal with optional entry"
+	echo "[PASS] manifest-lint: runtime guard aborts on minimal with optional entry"
 }
 
 function run_profile() {
@@ -337,13 +337,13 @@ HXMOCK
 	mkdir -p "$fake_zinit_plugin_dir/knqyf263---pet"
 	touch "$fake_zinit_plugin_dir/knqyf263---pet/pet"
 
-	# ---- Step 2: switch to 'hypr-minimal' via install (exercises autoremove) ----
+	# ---- Step 2: switch to 'minimal' via install (exercises autoremove) ----
 	# Using 'install' rather than 'link' so the full switch path runs:
 	#   link (detects switch, unlinks removed entries, sets DOTFILES_PROFILE_SWITCHED)
 	#   → update (packages, helix, nvim, then autoremove at end)
 	: > "$tmp_root/commands.log"
 	PATH="$mock_dir:$PATH" HOME="$home_dir" XDG_CACHE_HOME="$cache_dir" XDG_DATA_HOME="$home_dir/.local/share" XDG_CONFIG_HOME="$home_dir/.config" \
-		bash "$dotfiles_dir/scripts/initiate.sh" install --profile hypr-minimal > "$tmp_root/run-switch.log" 2>&1 \
+		bash "$dotfiles_dir/scripts/initiate.sh" install --profile minimal > "$tmp_root/run-switch.log" 2>&1 \
 		|| { echo "[FAIL] switch-test: profile switch install failed"; cat "$tmp_root/run-switch.log" 1>&2; exit 1; }
 
 	# State file should record the new profile
@@ -351,9 +351,9 @@ HXMOCK
 	[[ -f "$state_file" ]] || fail "switch-test: state file missing after switch"
 	local recorded
 	recorded=$(cat "$state_file")
-	[[ "$recorded" == "hypr-minimal" ]] \
-		|| fail "switch-test: state file contains '$recorded', expected 'hypr-minimal'"
-	echo "  profile switch: state file updated to hypr-minimal: OK"
+	[[ "$recorded" == "minimal" ]] \
+		|| fail "switch-test: state file contains '$recorded', expected 'minimal'"
+	echo "  profile switch: state file updated to minimal: OK"
 
 	# Autoremove should have been called (apt-get on debian/ubuntu)
 	grep -q "autoremove" "$tmp_root/commands.log" \
@@ -457,7 +457,7 @@ function main() {
 			--docker)
 				run_docker="true"
 				;;
-			full | hypr-minimal)
+			full | minimal)
 				profiles+=("$arg")
 				;;
 			*)
@@ -467,7 +467,7 @@ function main() {
 	done
 
 	if [[ ${#profiles[@]} -eq 0 ]]; then
-		profiles=(hypr-minimal full)
+		profiles=(minimal full)
 	fi
 
 	local script_dir

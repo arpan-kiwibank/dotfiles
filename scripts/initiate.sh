@@ -11,7 +11,7 @@ function helpmsg() {
 	print_default "  install: add require package install and symbolic link to $HOME from dotfiles [default]"
 	print_default "  update: add require package install or update."
 	print_default "  link: only symbolic link to $HOME from dotfiles."
-	print_default "  --profile: full (default) or hypr-minimal."
+	print_default "  --profile: full (default) or minimal."
 	print_default "  --dry-run: print planned changes without modifying the system."
 	print_default "  --allow-desktop: in WSL, link config/desktop/** entries anyway (default: skipped in WSL)."
 	print_default ""
@@ -154,10 +154,10 @@ function main() {
 	done
 
 	case "$profile" in
-		full | hypr-minimal)
+			full | minimal)
 			;;
 		*)
-			echo "[ERROR] Invalid profile '$profile' (supported: full, hypr-minimal)"
+				echo "[ERROR] Invalid profile '$profile' (supported: full, minimal)"
 			helpmsg
 			exit 1
 			;;

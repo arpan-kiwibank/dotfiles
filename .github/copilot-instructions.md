@@ -5,7 +5,7 @@ This repository is organized by folder domain. When working here, inspect the sm
 ## Architecture Map
 
 - `scripts/` and `setup.sh`: bootstrap, install, update, dry-run, and linker flow.
-- `profiles/`: manifest-driven linking; active profiles are `full` and `hypr-minimal`.
+- `profiles/`: manifest-driven linking; active profiles are `full` and `minimal`.
 - `config/core/zsh/`, `home/.zshenv`, `local-bin/`: shell behavior, zsh startup, completions, and local helpers.
 - `config/core/nvim/`, `config/core/Code/`, `config/core/Code - Insiders/`: editor configuration.
 - `config/desktop/`: Hyprland, Sway, Waybar, Dunst, and desktop integration.
