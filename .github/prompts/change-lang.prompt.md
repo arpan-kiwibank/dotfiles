@@ -1,5 +1,5 @@
 ---
-description: "Use when: changing language manager configuration, asdf, anyenv, rtx, toolchain bootstrap, or version-manager behavior in this dotfiles repo."
+description: "Use when: changing language manager configuration, mise, toolchain bootstrap, or version-manager behavior in this dotfiles repo."
 ---
 
 The task is:

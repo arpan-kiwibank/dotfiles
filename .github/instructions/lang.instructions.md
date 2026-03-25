@@ -1,6 +1,6 @@
 ---
 applyTo: "config/lang/**"
-description: "Use when: changing language manager configuration, asdf, anyenv, rtx, toolchain bootstrap, or version-manager behavior under config/lang/."
+description: "Use when: changing language manager configuration, mise, toolchain bootstrap, or version-manager behavior under config/lang/."
 ---
 
 # Language Manager Instructions

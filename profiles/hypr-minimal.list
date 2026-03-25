@@ -62,7 +62,7 @@ config/optional/conky
 config/misc/tealdeer
 
 # language managers kept in minimal profile
-config/lang/rtx
+config/lang/mise
 
 # misc
 config/misc/chrome-flags.conf
