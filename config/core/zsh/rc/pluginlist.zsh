@@ -480,14 +480,6 @@ if [ "$ZSHRC_BENCH" != "true" ]; then
 fi
 
 
-#==============================================================#
-# Analytics
-#==============================================================#
-if [[ "${DISABLE_WAKATIME}" != "true" ]]; then
-	zinit wait'2' lucid \
-		atpull'python -c "$(wget -q -O - https://raw.githubusercontent.com/wakatime/vim-wakatime/master/scripts/install_cli.py)"' \
-		light-mode for @sobolevn/wakatime-zsh-plugin
-fi
 
 
 #==============================================================#
