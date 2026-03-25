@@ -48,6 +48,17 @@ Never call `sudo` directly in new code — use `run_cmd sudo <cmd>` so dry-run s
   ```
 - Both install calls are non-fatal (`|| print_warning`) because network download failures should not abort the rest of bootstrap.
 
+## Idempotency
+
+Every bootstrap phase is safe to re-run after a `git pull`. Key properties:
+
+- **Linker** (`home-dir.sh`): `symlink_points_to()` skips entries that are already correctly linked.
+- **Package installs**: `apt-get install -y`, `pacman -S --noconfirm --needed`, and `yum install -y` are all idempotent by design.
+- **`ensure_zsh_default_shell`**: checks the current shell before calling `chsh`.
+- **`neovim_nightly`**: GitHub API mtime check — skips download if installed binary is at least as new as the latest published nightly.
+- **`install_helix`**: GitHub releases API version check — compares `hx --version` against the latest tag. Fail-open: if the API call fails or the version cannot be parsed, the code falls through and re-installs. `get_latest_helix_version()` in `helix.sh` encapsulates this API call.
+- **`checkinstall` RHEL path**: `yum clean all` and EPEL/CRB repo setup run only once per bootstrap session, guarded by `_DOTFILES_CHECKINSTALL_RHEL_INIT`. Subsequent `checkinstall` calls within the same session skip the one-time setup and go straight to the package install.
+
 ## Architecture support
 
 Neovim (`nvim.sh`) and Helix (`helix.sh`) detect `uname -m` and download:

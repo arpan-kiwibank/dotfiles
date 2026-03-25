@@ -280,21 +280,27 @@ function checkinstall() {
 		exit 1
 	fi
 	if [[ $distro == "redhat" ]]; then
-		run_cmd sudo yum clean all
-		# EPEL + extra repos only needed on RHEL/CentOS, not Fedora
-		if ! grep -qi "fedora" /etc/redhat-release 2>/dev/null; then
-			run_cmd sudo yum install -y epel-release
-			# RHEL/CentOS 8: powertools; RHEL/CentOS 9+: crb
-			local rhel_ver
-			rhel_ver=$(grep -oP '(?<=release )\d+' /etc/redhat-release 2>/dev/null | head -1)
-			if [[ "${rhel_ver:-0}" -ge 8 ]]; then
-				run_cmd sudo dnf install -y 'dnf-command(config-manager)'
-				if [[ "${rhel_ver}" -ge 9 ]]; then
-					run_cmd sudo dnf config-manager --set-enabled crb
-				else
-					run_cmd sudo dnf config-manager --set-enabled powertools
+		# Run yum clean all and EPEL/CRB setup only once per bootstrap session.
+		# checkinstall is called multiple times; repeating these is wasteful
+		# (yum clean all evicts cached metadata unnecessarily on re-runs).
+		if [[ "${_DOTFILES_CHECKINSTALL_RHEL_INIT:-false}" != "true" ]]; then
+			run_cmd sudo yum clean all
+			# EPEL + extra repos only needed on RHEL/CentOS, not Fedora
+			if ! grep -qi "fedora" /etc/redhat-release 2>/dev/null; then
+				run_cmd sudo yum install -y epel-release
+				# RHEL/CentOS 8: powertools; RHEL/CentOS 9+: crb
+				local rhel_ver
+				rhel_ver=$(grep -oP '(?<=release )\d+' /etc/redhat-release 2>/dev/null | head -1)
+				if [[ "${rhel_ver:-0}" -ge 8 ]]; then
+					run_cmd sudo dnf install -y 'dnf-command(config-manager)'
+					if [[ "${rhel_ver}" -ge 9 ]]; then
+						run_cmd sudo dnf config-manager --set-enabled crb
+					else
+						run_cmd sudo dnf config-manager --set-enabled powertools
+					fi
 				fi
 			fi
+			_DOTFILES_CHECKINSTALL_RHEL_INIT=true
 		fi
 	fi
 

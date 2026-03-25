@@ -71,12 +71,50 @@ function run_profile() {
 	create_mock_command yum "$mock_dir" "$tmp_root"
 	create_mock_command dnf "$mock_dir" "$tmp_root"
 	create_mock_command pacman "$mock_dir" "$tmp_root"
-	create_mock_command curl "$mock_dir" "$tmp_root"
-	create_mock_command chsh "$mock_dir" "$tmp_root"
+        create_mock_command chsh "$mock_dir" "$tmp_root"
 
-	# sudo mock: handle -v (credential check) and -n true (keepalive) as no-ops;
-	# pass everything else through so PATH-mocked commands are still reachable.
-	cat > "$mock_dir/sudo" <<SUDOMOCK
+        # curl mock: write empty file for download calls (-o), return minimal
+        # fake JSON for GitHub API calls (stdout, no -o) so version checks
+        # get a parseable response.  Both nvim and Helix version checks are
+        # fail-open so even empty responses are safe, but a real-shaped response
+        # lets the version-check branch exercise properly.
+        cat > "$mock_dir/curl" <<'CURLMOCK'
+#!/usr/bin/env bash
+printf 'curl %s\n' "$*" >> "${MOCK_LOG}"
+out=''
+is_api=false
+for arg in "$@"; do
+        case "$arg" in
+                -o) ;;
+                api.github.com*) is_api=true ;;
+                https://api.github.com*) is_api=true ;;
+        esac
+done
+# Capture -o destination
+i=1
+while [[ $i -le $# ]]; do
+        if [[ "${!i}" == "-o" ]]; then
+                i=$((i+1))
+                out="${!i}"
+        fi
+        i=$((i+1))
+done
+if [[ -n "$out" ]]; then
+        : > "$out"
+elif "$is_api"; then
+        # Return a very old release so version checks always see an update
+        # available (ensures the binary-download branch is still exercised).
+        printf '{"tag_name":"0.1","published_at":"2000-01-01T00:00:00Z"}\n'
+fi
+exit 0
+CURLMOCK
+        # Inject log path so the heredoc can reference the outer variable
+        sed -i "s|\${MOCK_LOG}|$tmp_root/commands.log|g" "$mock_dir/curl"
+        chmod +x "$mock_dir/curl"
+
+        # sudo mock: handle -v (credential check) and -n true (keepalive) as no-ops;
+        # pass everything else through so PATH-mocked commands are still reachable.
+        cat > "$mock_dir/sudo" <<SUDOMOCK
 #!/usr/bin/env bash
 printf 'sudo %s\n' "\$*" >> '$tmp_root/commands.log'
 case "\$1" in
@@ -85,7 +123,17 @@ case "\$1" in
 esac
 exec "\$@"
 SUDOMOCK
-	chmod +x "$mock_dir/sudo"
+        chmod +x "$mock_dir/sudo"
+
+        # hx mock: reports a very old version so the Helix version check always
+        # sees an update available — ensures the binary-fallback download path
+        # is exercised on every harness run.
+        cat > "$mock_dir/hx" <<'HXMOCK'
+#!/usr/bin/env bash
+echo 'helix 0.0 (mock)'
+exit 0
+HXMOCK
+        chmod +x "$mock_dir/hx"
 
 	# tar mock: logs the call and creates a fake extracted directory when extracting
 	# (so helix/nvim post-extract checks can find the directory they expect)

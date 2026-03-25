@@ -98,14 +98,30 @@ function install_helix_binary_fallback() {
 	print_success "Helix installed via GitHub release fallback"
 }
 
-function install_helix() {
-	if command -v hx >/dev/null 2>&1; then
-		print_notice "Helix already installed; skipping binary install"
-		return 0
-	fi
+function get_latest_helix_version() {
+        curl -fsSL "https://api.github.com/repos/helix-editor/helix/releases/latest" \
+                2>/dev/null \
+                | grep -m1 '"tag_name"' \
+                | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -1 || true
+}
 
-	if try_install_helix_from_pkg_manager; then
-		print_success "Helix installed from package manager"
+function install_helix() {
+        if command -v hx >/dev/null 2>&1; then
+                # Already installed — check whether a newer release exists on GitHub.
+                # Fail-open: if the API call fails or the version cannot be parsed,
+                # latest_ver is empty and we fall through to re-install.
+                local installed_ver latest_ver
+                installed_ver=$(hx --version 2>/dev/null | grep -oE '[0-9]+\.[0-9]+(\.[0-9]+)?' | head -1 || true)
+                latest_ver=$(get_latest_helix_version)
+                if [[ -n "$latest_ver" && "$installed_ver" == "$latest_ver" ]]; then
+                        print_notice "Helix is up to date ($installed_ver)"
+                        return 0
+                fi
+                [[ -n "$latest_ver" ]] && print_notice "Helix update available: $installed_ver → $latest_ver"
+        fi
+
+        if try_install_helix_from_pkg_manager; then
+                print_success "Helix installed/updated from package manager"
 		return 0
 	fi
 
