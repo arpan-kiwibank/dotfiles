@@ -100,12 +100,6 @@ zinit wait'1' lucid \
 	light-mode for @mollifier/cd-gitroot
 
 zinit wait'1' lucid \
-	light-mode for @peterhurford/up.zsh
-
-zinit wait'1' lucid \
-	light-mode for @Tarrasch/zsh-bd
-
-zinit wait'1' lucid \
 	atinit"source $ZHOMEDIR/rc/pluginconfig/zshmarks_atinit.zsh" \
 	light-mode for @jocelynmallon/zshmarks
 
