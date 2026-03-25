@@ -76,6 +76,25 @@ When a user switches from one profile to another (e.g. `full` → `hypr-minimal`
 - On a `link`-only run, the linker still performs the symlink and hook cleanup but the package phase is skipped. The user is reminded to run `./setup.sh --profile <new>` to trigger the full switch including autoremove. (`setup.sh` is the public interface for all user-facing profile operations; `initiate.sh` sub-commands are internal/power-user.)
 - The state file path honours `XDG_DATA_HOME` when set; test harnesses must pass `XDG_DATA_HOME` explicitly to avoid polluting the real user home.
 
+## Cross-platform compatibility notes
+
+Supported platforms: Debian/Ubuntu (`debian`), Fedora/RHEL/CentOS (`redhat`), Arch Linux (`arch`). Alpine (`alpine`) is detected but hard-exits — not supported.
+
+**Package name differences across distros** (handled in `basic-packages.sh`):
+
+| Package | debian | redhat | arch |
+|---|---|---|---|
+| sqlite | `sqlite3` | `sqlite` + `sqlite-devel` | `sqlite` |
+| pip | `python3-pip` | `python3-pip` | `python-pip` |
+| clipboard | *(not installed)* | *(not installed)* | `xsel` |
+| tar/xz | *(base)* | *(base)* | explicit `checkinstall tar` |
+
+**`jq`-free fallback in helix.sh**: `install_helix_binary_fallback()` uses `jq` when available to parse the GitHub releases API but falls back to `grep`+`sed` when `jq` is absent. This means `bash scripts/helix.sh` works safely as a manual retry even before `basic-packages.sh` has run.
+
+**`xsel`** is only installed on Arch (not Debian or RHEL). All usages in zsh, tmux, and waybar are guarded by `command -v xsel`, so they degrade gracefully on distros where it is not present.
+
+**`checkinstall` convention**: always call `checkinstall <pkg>` instead of invoking `apt-get`/`yum`/`pacman` directly. `checkinstall` handles `run_cmd` (dry-run), RHEL EPEL/CRB setup, `DEBIAN_FRONTEND`, and the distro dispatch. The only exception is `ensure_prerequisites()`, which calls the package manager directly because it runs before `ensure_sudo()`.
+
 ## Architecture support
 
 Neovim (`nvim.sh`) and Helix (`helix.sh`) detect `uname -m` and download:

@@ -2,7 +2,7 @@
 
 set -ue
 
-source $(dirname "${BASH_SOURCE[0]:-$0}")/utils.sh
+source "$(dirname "${BASH_SOURCE[0]:-$0}")"/utils.sh
 
 distro=$(whichdistro)
 if [[ $distro == "redhat" ]]; then
@@ -16,9 +16,9 @@ fi
 if [[ $distro == "redhat" ]]; then
 	:
 elif [[ $distro == "arch" ]]; then
-	run_cmd sudo pacman -S --noconfirm --needed tar
+	checkinstall tar
 elif [[ $distro == "debian" ]]; then
 	:
 else
-	:
+	print_warning "basic-packages: unknown distro '$distro' — skipping tar install"
 fi

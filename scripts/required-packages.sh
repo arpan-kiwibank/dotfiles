@@ -2,7 +2,7 @@
 
 set -ue
 
-source $(dirname "${BASH_SOURCE[0]:-$0}")/utils.sh
+source "$(dirname "${BASH_SOURCE[0]:-$0}")"/utils.sh
 
 distro=$(whichdistro)
 if [[ $distro == "redhat" ]]; then

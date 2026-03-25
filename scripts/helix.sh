@@ -59,7 +59,19 @@ function install_helix_binary_fallback() {
 	suffix=$(get_helix_linux_arch_suffix)
 	local api_url="https://api.github.com/repos/helix-editor/helix/releases/latest"
 	local download_url
-	download_url=$(curl -fsSL "$api_url" | jq -r ".assets[] | select(.name | endswith(\"${suffix}.tar.xz\")) | .browser_download_url" | head -n1)
+
+	# Prefer jq when available; fall back to grep+sed so standalone
+	# 'bash scripts/helix.sh' works even before jq is installed.
+	if command -v jq >/dev/null 2>&1; then
+		download_url=$(curl -fsSL "$api_url" \
+			| jq -r ".assets[] | select(.name | endswith(\"${suffix}.tar.xz\")) | .browser_download_url" \
+			| head -n1)
+	else
+		download_url=$(curl -fsSL "$api_url" \
+			| grep -o '"browser_download_url": "[^"]*'"${suffix}"'\.tar\.xz"' \
+			| grep -o 'https://[^"]*' \
+			| head -n1)
+	fi
 
 	if [[ -z "$download_url" || "$download_url" == "null" ]]; then
 		print_error "Could not find Helix release asset for ${suffix}"
