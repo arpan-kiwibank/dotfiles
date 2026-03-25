@@ -50,4 +50,6 @@ function neovim_nightly() {
 	checkinstall gcc
 }
 
-neovim_nightly
+if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
+    neovim_nightly
+fi

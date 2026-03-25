@@ -90,6 +90,110 @@ Useful variants:
 ./scripts/test-update-harness.sh --keep
 ```
 
+## Bare metal vs Docker bootstrap
+
+Bootstrap behaviour differs between a live machine and a Docker container. Use the correct steps to avoid failures.
+
+### Bare metal Linux
+
+Fully supported distros, detected automatically via `/etc/os-release`:
+
+| Distro family | Detected as | Package manager used |
+|---|---|---|
+| Ubuntu / Debian | `debian` | `sudo apt-get` |
+| Fedora | `redhat` | `sudo yum / dnf` |
+| RHEL / CentOS 8 | `redhat` | `sudo dnf` + `epel-release` + `powertools` |
+| RHEL / CentOS 9+ | `redhat` | `sudo dnf` + `epel-release` + `crb` |
+| Arch Linux | `arch` | `sudo pacman` |
+| Alpine | `alpine` | `sudo apk` |
+
+**Prerequisites on bare metal** (install manually before running `./setup.sh`):
+
+```bash
+# Debian / Ubuntu
+sudo apt-get install -y git curl
+
+# Fedora / RHEL
+sudo dnf install -y git curl
+
+# Arch
+sudo pacman -S --noconfirm git curl
+
+# Alpine
+sudo apk add git curl bash
+```
+
+**Full install on bare metal:**
+
+```bash
+git clone https://github.com/arpan-kiwibank/dotfiles
+cd dotfiles
+./setup.sh --profile full       # or --profile hypr-minimal
+```
+
+**Architecture support:**
+
+Both x86_64 and aarch64 (arm64) are supported for the binary install phase.
+`neovim_nightly` downloads `nvim-linux-x86_64.tar.gz` or `nvim-linux-arm64.tar.gz` automatically.
+Helix binary fallback downloads `x86_64-linux.tar.xz` or `aarch64-linux.tar.xz` automatically.
+No flags are needed — architecture is detected at runtime via `uname -m`.
+
+**If helix or neovim fails to download** (network restricted, proxy issues), bootstrap will print a warning and continue. Re-run the individual script after the environment is operational:
+
+```bash
+bash scripts/helix.sh
+bash scripts/nvim.sh
+```
+
+### Docker (testing / CI)
+
+Docker runs as root, so `sudo` is a no-op. The distro logic still works correctly.
+
+**Fedora and Arch base images include bash** — no network install step is needed to run bootstrap logic tests:
+
+```bash
+# Test distro detection + dry-run link on Fedora (no package install needed)
+docker run --rm -v "$PWD:/dotfiles:ro" --env DOTFILES_DRY_RUN=true fedora:40 \
+  bash -c 'source /dotfiles/scripts/utils.sh && whichdistro && \
+  HOME=/tmp/h XDG_CACHE_HOME=/tmp/c bash /dotfiles/scripts/initiate.sh link --dry-run --profile full'
+
+# Same for Arch
+docker run --rm -v "$PWD:/dotfiles:ro" --env DOTFILES_DRY_RUN=true archlinux:latest \
+  bash -c 'source /dotfiles/scripts/utils.sh && whichdistro && \
+  HOME=/tmp/h XDG_CACHE_HOME=/tmp/c bash /dotfiles/scripts/initiate.sh link --dry-run --profile full'
+```
+
+**Alpine requires bash** which is not in its base image. On a machine with a corporate proxy (Zscaler), `apk add` fails unless the host CA bundle is injected:
+
+```bash
+# Alpine with host CA bundle injected (for Zscaler / corporate proxy)
+docker run --rm \
+  -v "$PWD:/dotfiles:ro" \
+  -v /etc/ssl/certs/ca-certificates.crt:/certs.crt:ro \
+  --env SSL_CERT_FILE=/certs.crt \
+  --env DOTFILES_DRY_RUN=true \
+  alpine:3 \
+  sh -c 'apk add --quiet bash git && \
+  HOME=/tmp/h XDG_CACHE_HOME=/tmp/c bash /dotfiles/scripts/initiate.sh link --dry-run --profile full'
+```
+
+**Ubuntu / Debian Docker images** trust the corporate CA natively if the container image was already updated. On the standard Docker Hub images, `apt-get update` works without extra cert injection:
+
+```bash
+docker run --rm -v "$PWD:/dotfiles:ro" --env DOTFILES_DRY_RUN=true ubuntu:24.04 \
+  bash -c 'apt-get update -qq && apt-get install -y -qq git bash && \
+  HOME=/tmp/h XDG_CACHE_HOME=/tmp/c bash /dotfiles/scripts/initiate.sh link --dry-run --profile full'
+```
+
+**`is_wsl()` is always false inside Docker**, even when Docker is running on a WSL2 host. The check requires `/proc/sys/fs/binfmt_misc/WSLInterop` in addition to the kernel string — this file exists only in a real WSL session.
+
+**Full cross-platform Docker test suite** (saved at `/tmp/bootstrap-compat-test.sh` during dev):
+
+```bash
+# Rebuild and run all 9 tests (Ubuntu x2, Fedora, Arch, Alpine, nvim arch, helix arch, is_wsl x2)
+bash /tmp/bootstrap-compat-test.sh
+```
+
 ## WSL rebuild checklist
 
 Use this checklist before and after deregistering a WSL distro.

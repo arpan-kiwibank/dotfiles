@@ -73,7 +73,31 @@ function run_profile() {
 	create_mock_command pacman "$mock_dir" "$tmp_root"
 	create_mock_command apk "$mock_dir" "$tmp_root"
 	create_mock_command curl "$mock_dir" "$tmp_root"
-	create_mock_command tar "$mock_dir" "$tmp_root"
+	create_mock_command chsh "$mock_dir" "$tmp_root"
+
+	# sudo mock: passes through to its arguments so PATH-mocked commands are still found
+	cat > "$mock_dir/sudo" <<SUDOMOCK
+#!/usr/bin/env bash
+printf 'sudo %s\n' "\$*" >> '$tmp_root/commands.log'
+exec "\$@"
+SUDOMOCK
+	chmod +x "$mock_dir/sudo"
+
+	# tar mock: logs the call and creates a fake extracted directory when extracting
+	# (so helix/nvim post-extract checks can find the directory they expect)
+	cat > "$mock_dir/tar" <<TARMOCK
+#!/usr/bin/env bash
+printf 'tar %s\n' "\$*" >> '$tmp_root/commands.log'
+args=("\$@")
+for i in "\${!args[@]}"; do
+    if [[ "\${args[\$i]}" == "-C" ]] && [[ -n "\${args[\$((i+1))]:-}" ]] && [[ -d "\${args[\$((i+1))]}" ]]; then
+        mkdir -p "\${args[\$((i+1))]}/mock-extracted"
+        break
+    fi
+done
+exit 0
+TARMOCK
+	chmod +x "$mock_dir/tar"
 
 	PATH="$mock_dir:$PATH" HOME="$home_dir" XDG_CACHE_HOME="$cache_dir" \
 		bash "$dotfiles_dir/scripts/initiate.sh" update --profile "$profile" > "$tmp_root/run.log" 2>&1 || {

@@ -205,7 +205,9 @@ function main() {
 		source "$current_dir"/basic-packages.sh
 		ensure_zsh_default_shell
 		source "$current_dir"/helix.sh
+		install_helix || print_warning "Helix install failed; run scripts/helix.sh manually to retry"
 		source "$current_dir"/nvim.sh
+		neovim_nightly || print_warning "Neovim nightly install failed; run scripts/nvim.sh manually to retry"
 		run_cmd mkdir -p "$HOME/.local/bin"
 		if compgen -G "$dotfiles_dir/local-bin/*" >/dev/null; then
 			run_cmd ln -snf "$dotfiles_dir"/local-bin/* "$HOME/.local/bin/"

@@ -123,11 +123,19 @@ function checkinstall() {
 	distro=$(whichdistro)
 	if [[ $distro == "redhat" ]]; then
 		run_cmd sudo yum clean all
-		if ! grep -i "fedora" /etc/redhat-release >/dev/null; then
+		# EPEL + extra repos only needed on RHEL/CentOS, not Fedora
+		if ! grep -qi "fedora" /etc/redhat-release 2>/dev/null; then
 			run_cmd sudo yum install -y epel-release
-			if [[ $(cat /etc/*release | grep '^VERSION=' | cut -d '"' -f 2 | cut -d " " -f 1) -ge 8 ]]; then
+			# RHEL/CentOS 8: powertools; RHEL/CentOS 9+: crb
+			local rhel_ver
+			rhel_ver=$(grep -oP '(?<=release )\d+' /etc/redhat-release 2>/dev/null | head -1)
+			if [[ "${rhel_ver:-0}" -ge 8 ]]; then
 				run_cmd sudo dnf install -y 'dnf-command(config-manager)'
-				run_cmd sudo dnf config-manager --set-enabled powertools
+				if [[ "${rhel_ver}" -ge 9 ]]; then
+					run_cmd sudo dnf config-manager --set-enabled crb
+				else
+					run_cmd sudo dnf config-manager --set-enabled powertools
+				fi
 			fi
 		fi
 	fi
@@ -135,7 +143,7 @@ function checkinstall() {
 	local pkgs="$*"
 	if [[ $distro == "debian" ]]; then
 		pkgs=${pkgs//python-pip/python3-pip}
-		run_cmd env DEBIAN_FRONTEND=noninteractive apt-get install -y $pkgs
+		run_cmd sudo env DEBIAN_FRONTEND=noninteractive apt-get install -y $pkgs
 	elif [[ $distro == "redhat" ]]; then
 		run_cmd sudo yum install -y $pkgs
 	elif [[ $distro == "arch" ]]; then
