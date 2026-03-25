@@ -135,6 +135,43 @@ function symlink_points_to() {
 	[[ -L "$symlink_path" ]] && [[ "$(readlink -f "$symlink_path")" == "$(readlink -f "$source_path")" ]]
 }
 
+# Fast pre-scan check: returns 0 if the manifest entry is already correctly linked
+# (or is a WSL-skipped desktop entry), 1 if it needs action.
+function is_entry_already_linked() {
+        local dotfiles_dir="$1"
+        local manifest_entry="$2"
+        local source_path="$dotfiles_dir/$manifest_entry"
+
+        # Missing source — will be warned about in the real loop
+        [[ ! -e "$source_path" && ! -L "$source_path" ]] && return 1
+
+        # Desktop entries skipped in WSL are effectively "handled"
+        if [[ "${DOTFILES_SKIP_DESKTOP:-false}" == "true" && "$manifest_entry" == config/desktop/* ]]; then
+                return 0
+        fi
+
+        local dest_dir
+        case "$manifest_entry" in
+                home/*)      dest_dir="$HOME" ;;
+                local-bin/*) dest_dir="$HOME/.local/bin" ;;
+                config/*)    dest_dir="${XDG_CONFIG_HOME:-$HOME/.config}" ;;
+                *)           return 1 ;;
+        esac
+
+        local f_filename f_filepath
+        f_filename=$(basename "$source_path")
+        f_filepath="$dest_dir/$f_filename"
+
+        # Entries with _install.sh hooks are always passed to the real loop
+        if [[ -d "$source_path" ]]; then
+                local installers
+                mapfile -t installers < <(command find "$source_path" -name "_install.sh" -type f 2>/dev/null)
+                [[ ${#installers[@]} -gt 0 ]] && return 1
+        fi
+
+        symlink_points_to "$f_filepath" "$source_path"
+}
+
 function backup_and_link() {
 	local link_src_file=$1
 	local link_dest_dir=$2
@@ -149,7 +186,6 @@ function backup_and_link() {
 	fi
 
 	if symlink_points_to "$f_filepath" "$link_src_file"; then
-		print_default "Skip (already linked): $f_filepath"
 		return
 	fi
 
@@ -190,12 +226,9 @@ function install_by_local_installer() {
 }
 
 function link_to_homedir() {
-	print_notice "backup old dotfiles..."
 	local tmp_date
 	tmp_date=$(date '+%y%m%d-%H%M%S')
 	local backupdir="${XDG_CACHE_HOME:-$HOME/.cache}/dotbackup/$tmp_date"
-	mkdir_not_exist "$backupdir"
-	print_info "create backup directory: $backupdir\n"
 
 	print_info "Creating symlinks"
 	local current_dir
@@ -223,16 +256,41 @@ function link_to_homedir() {
 	local -a manifest_entries=()
 	load_profile_entries "$dotfiles_dir" "$profile" manifest_entries
 	print_notice "Using profile manifest: $profile"
-	if [[ "$HOME" != "$dotfiles_dir" ]]; then
-		local manifest_entry
-		for manifest_entry in "${manifest_entries[@]}"; do
-			if should_ignore_manifest_entry "$manifest_entry" "${linkignore[@]}"; then
-				print_notice "Skip (ignore): $manifest_entry"
-				continue
-			fi
-			link_manifest_entry "$dotfiles_dir" "$manifest_entry" "$backupdir"
-		done
-	fi
+
+        if [[ "$HOME" == "$dotfiles_dir" ]]; then
+                return 0
+        fi
+
+        # Pre-scan: count how many entries are already correctly linked.
+        # If all are up to date, skip the loop (no backup dir needed, no noise).
+        local count_total=0 count_linked=0
+        local manifest_entry
+        for manifest_entry in "${manifest_entries[@]}"; do
+                should_ignore_manifest_entry "$manifest_entry" "${linkignore[@]}" && continue
+                count_total=$((count_total + 1))
+                is_entry_already_linked "$dotfiles_dir" "$manifest_entry" && count_linked=$((count_linked + 1))
+        done
+
+        if [[ "$count_linked" -eq "$count_total" && "$count_total" -gt 0 ]]; then
+                print_success "All $count_total entries already linked — nothing to do"
+                return 0
+        fi
+
+        if [[ "$count_linked" -gt 0 ]]; then
+                print_notice "Link state: $count_linked/$count_total already linked"
+        fi
+
+        # Create backup dir only now that we know work is needed
+        mkdir_not_exist "$backupdir"
+        print_info "create backup directory: $backupdir\n"
+
+        for manifest_entry in "${manifest_entries[@]}"; do
+                if should_ignore_manifest_entry "$manifest_entry" "${linkignore[@]}"; then
+                        print_notice "Skip (ignore): $manifest_entry"
+                        continue
+                fi
+                link_manifest_entry "$dotfiles_dir" "$manifest_entry" "$backupdir"
+        done
 }
 
 link_to_homedir

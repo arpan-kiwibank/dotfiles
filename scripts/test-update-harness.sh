@@ -175,6 +175,19 @@ TARMOCK
 	echo "  commands: $(sed -n '1,6p' "$tmp_root/commands.log" | paste -sd ';' -)"
 	echo "  local-bin: $(find "$home_dir/.local/bin" -maxdepth 1 -type l | wc -l | tr -d ' ') symlinks"
 
+	# Idempotency check: run the link phase a second time with the same HOME.
+	# The pre-scan should detect all entries already linked and print the
+	# fast-path message without creating any new backup dir.
+	: > "$tmp_root/run2.log"
+	PATH="$mock_dir:$PATH" HOME="$home_dir" XDG_CACHE_HOME="$cache_dir" \
+		bash "$dotfiles_dir/scripts/initiate.sh" link --profile "$profile" >> "$tmp_root/run2.log" 2>&1 \
+		|| fail "idempotent link re-run failed for profile=$profile"
+	grep -q "already linked" "$tmp_root/run2.log" \
+		|| fail "Expected 'already linked' summary in idempotent re-run log"
+	grep -q "Skip (already linked):" "$tmp_root/run2.log" \
+		&& fail "Found per-entry 'Skip (already linked)' noise in idempotent re-run — should be suppressed"
+	echo "  idempotent re-run: OK"
+
 	if [[ "$keep_tmp" != "true" ]]; then
 		rm -rf "$tmp_root"
 	fi
