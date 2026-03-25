@@ -183,6 +183,7 @@ function main() {
 	# Prompt for sudo once, before any package installs begin, and keep the
 	# credential alive in the background. link-only skips this entirely.
 	if [[ "$is_install" == "true" || "$is_update" == "true" ]]; then
+		preflight_check
 		ensure_prerequisites
 		ensure_sudo
 	fi

@@ -118,6 +118,76 @@ function whichdistro() {
 	fi
 }
 
+function preflight_check() {
+	# Run before any install/update phase. Hard failures exit; soft issues
+	# print a warning and allow bootstrap to continue.
+	# Skipped entirely in dry-run mode (environment validity is irrelevant there).
+	if is_dry_run; then
+		return 0
+	fi
+
+	local hard_fail=0
+
+	print_info "Running pre-flight checks…"
+
+	# 1. Distro support
+	local distro
+	distro=$(whichdistro)
+	case "$distro" in
+		debian | redhat | arch)
+			print_success "  Distro: $distro"
+			;;
+		alpine)
+			print_error "  Distro: Alpine is not supported. Aborting."
+			exit 1
+			;;
+		*)
+			print_warning "  Distro: unrecognised — package installs may fail"
+			;;
+	esac
+
+	# 2. Architecture
+	local arch
+	arch=$(uname -m)
+	case "$arch" in
+		x86_64 | amd64 | aarch64 | arm64)
+			print_success "  Architecture: $arch"
+			;;
+		*)
+			print_warning "  Architecture: $arch — Neovim and Helix binary downloads are not supported on this arch"
+			;;
+	esac
+
+	# 3. sudo availability (only relevant for non-root)
+	if [[ "$EUID" -ne 0 ]]; then
+		if command -v sudo >/dev/null 2>&1; then
+			print_success "  sudo: available"
+		else
+			print_error "  sudo: not found — cannot install packages as non-root"
+			hard_fail=1
+		fi
+	else
+		print_success "  sudo: running as root"
+	fi
+
+	# 4. Network reachability to GitHub (soft check — proxy/firewall may still
+	#    intercept individual downloads, but this catches fully offline machines)
+	if curl -fsSL --max-time 5 --head "https://github.com" >/dev/null 2>&1; then
+		print_success "  Network: GitHub reachable"
+	else
+		print_warning "  Network: GitHub unreachable — Neovim and Helix downloads will likely fail"
+		print_notice "           Run bash scripts/helix.sh and bash scripts/nvim.sh manually once network is available"
+	fi
+
+	if [[ "$hard_fail" -ne 0 ]]; then
+		print_error "Pre-flight failed. Fix the issues above and re-run setup.sh."
+		exit 1
+	fi
+
+	print_info "Pre-flight checks passed."
+	print_info ""
+}
+
 function ensure_prerequisites() {
 	# Install git and curl if absent. Runs before ensure_sudo so the package
 	# manager is invoked directly. No-op when both tools are already present
