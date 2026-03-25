@@ -11,6 +11,10 @@ function is_dry_run() {
 	esac
 }
 
+function is_wsl() {
+	grep -qi microsoft /proc/version 2>/dev/null
+}
+
 function run_cmd() {
 	if is_dry_run; then
 		print_notice "[dry-run] $*"

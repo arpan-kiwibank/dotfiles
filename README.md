@@ -47,6 +47,8 @@ The linker no longer scans the repository tree heuristically. It links the entri
 - `full` (default): links the active stack, language-manager configs, and misc config files.
 - `hypr-minimal`: links the active stack with a reduced language-manager set.
 
+> **WSL note:** When bootstrapping inside WSL2, `config/desktop/**` entries are automatically skipped regardless of profile. Hyprland and Sway both require direct DRM/GPU access that WSL2 does not expose. The core shell, editor, git, and tool configs are linked normally. Pass `--allow-desktop` to override this behaviour.
+
 Examples:
 
 ```bash
@@ -114,6 +116,8 @@ After reinstall:
    cd dotfiles
    ./setup.sh --profile full
    ```
+
+   > Desktop entries (`config/desktop/**`) are **not** linked in WSL — this is intentional. Pass `--allow-desktop` only if you have a specific reason.
 
 1. Start a fresh shell session:
 

@@ -90,6 +90,11 @@ function link_manifest_entry() {
 		return
 	fi
 
+	if [[ "${DOTFILES_SKIP_DESKTOP:-false}" == "true" && "$manifest_entry" == config/desktop/* ]]; then
+		print_notice "WSL (skip desktop): $manifest_entry"
+		return
+	fi
+
 	case "$manifest_entry" in
 		home/*)
 			backup_and_link "$source_path" "$HOME" "$backup_root"

@@ -7,12 +7,13 @@ set -euo pipefail
 #--------------------------------------------------------------#
 
 function helpmsg() {
-	print_default "Usage: ${BASH_SOURCE[0]:-$0} [install | update | link] [--profile <name>] [--dry-run | -n] [--help | -h]" 0>&2
+	print_default "Usage: ${BASH_SOURCE[0]:-$0} [install | update | link] [--profile <name>] [--dry-run | -n] [--allow-desktop] [--help | -h]" 0>&2
 	print_default "  install: add require package install and symbolic link to $HOME from dotfiles [default]"
 	print_default "  update: add require package install or update."
 	print_default "  link: only symbolic link to $HOME from dotfiles."
 	print_default "  --profile: full (default) or hypr-minimal."
 	print_default "  --dry-run: print planned changes without modifying the system."
+	print_default "  --allow-desktop: in WSL, link config/desktop/** entries anyway (default: skipped in WSL)."
 	print_default ""
 }
 
@@ -80,6 +81,7 @@ function main() {
 	local action=""
 	local dry_run="${DOTFILES_DRY_RUN:-false}"
 	local profile="${DOTFILES_PROFILE:-full}"
+	local allow_desktop="false"
 
 	while [ $# -gt 0 ]; do
 		case ${1} in
@@ -89,6 +91,9 @@ function main() {
 				;;
 			--dry-run | -n)
 				dry_run="true"
+				;;
+			--allow-desktop)
+				allow_desktop="true"
 				;;
 			--profile)
 				if [[ $# -lt 2 ]]; then
@@ -138,6 +143,18 @@ function main() {
 
 	export DOTFILES_PROFILE="$profile"
 	print_notice "Profile: $DOTFILES_PROFILE"
+
+	# WSL2 does not provide DRM/GPU access — Hyprland and Sway require bare-metal hardware.
+	# Skip config/desktop/** linking unless --allow-desktop is explicitly passed.
+	if is_wsl; then
+		if [[ "$allow_desktop" == "true" ]]; then
+			print_warning "WSL detected: --allow-desktop passed, linking desktop entries anyway"
+		else
+			export DOTFILES_SKIP_DESKTOP=true
+			print_warning "WSL detected: skipping config/desktop/** entries (no DRM/GPU in WSL2)"
+			print_notice "  Pass --allow-desktop to link desktop entries anyway"
+		fi
+	fi
 
 	# default behaviour
 	if [[ -z "$action" ]]; then
