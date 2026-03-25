@@ -12,7 +12,18 @@ description: "Use when: changing bootstrap scripts, setup flow, install/update/l
 - Prefer validating bootstrap or linker changes with dry-run or the update harness when practical.
 - Do not broaden bootstrap scope into shell, desktop, or editor folders unless the task explicitly crosses those domains.
 
-## Distro detection
+## Sudo and privileged operations
+
+`ensure_sudo()` in `utils.sh` is the single entry point for sudo. It:
+- Checks `sudo` is available and exits with a clear message if not
+- Prints a user-visible explanation before prompting
+- Calls `sudo -v` once to authenticate upfront
+- Starts a background keepalive (`sudo -n true` every 30s, watching parent PID) so slow downloads do not expire the ticket
+- Is a no-op when `$EUID -eq 0` (root / Docker) or `is_dry_run` is true
+
+Call `ensure_sudo` once at the start of any flow that will invoke `checkinstall`, before any package installs. `initiate.sh` calls it whenever `is_install=true` or `is_update=true`. Link-only runs skip it.
+
+Never call `sudo` directly in new code — use `run_cmd sudo <cmd>` so dry-run suppresses it. The test harness mocks `sudo` with a passthrough; `-v` and `-n` are handled as no-ops.
 
 `whichdistro()` in `utils.sh` maps `/etc/*-release` files to: `debian`, `redhat`, `arch`, `alpine`. Use these four values everywhere.
 

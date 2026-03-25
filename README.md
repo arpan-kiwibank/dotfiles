@@ -131,6 +131,18 @@ cd dotfiles
 ./setup.sh --profile full       # or --profile hypr-minimal
 ```
 
+**Sudo prompt** — bootstrap calls `ensure_sudo()` once before any package installs begin. You will see:
+
+```
+Bootstrap will install system packages and needs elevated privileges.
+You will be prompted for your password once. Sudo access is then kept
+active for the duration of bootstrap so you are not asked again.
+
+[sudo] password for <user>:
+```
+
+This prompt appears exactly once regardless of distro. A background keepalive prevents the sudo ticket from expiring during slow downloads (Neovim nightly, Helix release). Running as root (Docker/CI) or with `--dry-run` skips it entirely.
+
 **Architecture support:**
 
 Both x86_64 and aarch64 (arm64) are supported for the binary install phase.
@@ -223,11 +235,13 @@ After reinstall:
 
    > Desktop entries (`config/desktop/**`) are **not** linked in WSL — this is intentional. Pass `--allow-desktop` only if you have a specific reason.
 
-1. Start a fresh shell session:
+1. Start a fresh shell session — **required before using `hx`, `nvim`, or any tool installed to `~/.local/bin`**:
 
    ```bash
    exec zsh
    ```
+
+   > Bootstrap finishes in a bash session. `~/.local/bin` is only added to `PATH` by `.zshenv`, which loads when zsh starts. Running `exec zsh` is the step that makes `hx`, `nvim`, `tldr`, and other installed binaries visible.
 
 1. Populate the `tldr` cache (empty on a fresh install):
 

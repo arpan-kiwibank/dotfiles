@@ -21,6 +21,13 @@ Never scan unrelated files. Limit reads to the pluginconfig file for that tool a
 
 ## Tool Inventory
 
+### Editors & Terminal
+
+| Tool | Repo | Command | What it does |
+|------|------|---------|--------------|
+| **helix** | helix-editor/helix | `hx` | Modal terminal editor; installed by bootstrap to `~/.local/bin/hx` via GitHub release. Config at `~/.config/helix/config.toml` (linked from `config/core/helix/` if present). Run `hx --health` to check LSP/DAP status |
+| **neovim** | neovim/neovim | `nvim` | Nightly neovim; installed by bootstrap to `~/.local/`. Config lives in `config/core/nvim/` |
+
 ### Shell — Completion & Suggestions
 
 | Tool | Repo | What it does |
