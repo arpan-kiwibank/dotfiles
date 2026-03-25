@@ -10,4 +10,5 @@ description: "Use when: changing zsh startup, zinit plugins, shell functions, co
 - Fix shell issues at the correct layer: startup files, plugin declarations, completions, or local helpers.
 - Be careful with WSL and missing system dependencies; guard optional shell behavior when practical.
 - Prefer targeted zsh syntax checks after editing shell files.
+- For zinit `gh-r` entries that download a raw binary (not a tarball), always add `atclone'chmod +x <name>' atpull'chmod +x <name>'` — `mv` renames but does not set the execute bit. Archive-based entries (with `pick'*/name'`) are unaffected because tar preserves the bit.
 - Do not pull in desktop or editor context unless the shell behavior clearly integrates with them.

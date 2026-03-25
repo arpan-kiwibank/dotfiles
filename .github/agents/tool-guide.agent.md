@@ -109,7 +109,7 @@ Never scan unrelated files. Limit reads to the pluginconfig file for that tool a
 | Tool | Repo | Command | What it does |
 |------|------|---------|--------------|
 | **procs** | dalance/procs | `procs` | Modern `ps` replacement with coloured output and tree view |
-| **tealdeer** | tealdeer-rs/tealdeer | `tldr` | Fast local `tldr` pages — community-written usage examples |
+| **tealdeer** | tealdeer-rs/tealdeer | `tldr` | Fast local `tldr` pages — community-written usage examples. Run `tldr --update` after first install to populate the cache. Config at `~/.config/tealdeer/config.toml` (linked from `config/misc/tealdeer/`); `tls_backend = "rustls-with-native-roots"` is pre-set for Zscaler-proxied networks |
 | **emojify** | mrowa44/emojify | `emojify` | Convert `:emoji_name:` codes to real emoji in text |
 
 ### CLI Tools — Version & Environment Management

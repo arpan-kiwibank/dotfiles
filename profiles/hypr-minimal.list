@@ -58,6 +58,9 @@ config/optional/autokey
 config/optional/hawck
 config/optional/conky
 
+# misc
+config/misc/tealdeer
+
 # language managers kept in minimal profile
 config/lang/rtx
 

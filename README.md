@@ -121,6 +121,12 @@ After reinstall:
    exec zsh
    ```
 
+1. Populate the `tldr` cache (empty on a fresh install):
+
+   ```bash
+   tldr --update
+   ```
+
 1. Validate key tooling:
 
    ```bash
