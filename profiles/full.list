@@ -49,3 +49,4 @@ config/misc/code-flags.conf
 config/misc/mimeapps.list
 config/misc/lesskey
 config/misc/vivaldi-stable.conf
+config/misc/tealdeer
