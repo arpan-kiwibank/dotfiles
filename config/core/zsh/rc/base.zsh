@@ -3,6 +3,9 @@
 ##          Base Configuration                                ##
 #==============================================================#
 
+# Disable compinit security checks for downloaded completions
+ZSH_DISABLE_COMPFIX=true
+
 HOSTNAME="$HOST"
 HISTFILE="${ZDATADIR}/zsh_history"
 HISTSIZE=10000                    # Number of histories in memory
