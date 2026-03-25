@@ -52,12 +52,28 @@ Never call `sudo` directly in new code — use `run_cmd sudo <cmd>` so dry-run s
 
 Every bootstrap phase is safe to re-run after a `git pull`. Key properties:
 
-- **Linker** (`home-dir.sh`): `symlink_points_to()` skips entries that are already correctly linked.
+- **Linker** (`home-dir.sh`): `symlink_points_to()` skips entries that are already correctly linked. A pre-scan fast path prints "All N entries already linked — nothing to do" and returns early without creating a backup dir when every entry is already in place.
 - **Package installs**: `apt-get install -y`, `pacman -S --noconfirm --needed`, and `yum install -y` are all idempotent by design.
 - **`ensure_zsh_default_shell`**: checks the current shell before calling `chsh`.
 - **`neovim_nightly`**: GitHub API mtime check — skips download if installed binary is at least as new as the latest published nightly.
 - **`install_helix`**: GitHub releases API version check — compares `hx --version` against the latest tag. Fail-open: if the API call fails or the version cannot be parsed, the code falls through and re-installs. `get_latest_helix_version()` in `helix.sh` encapsulates this API call.
 - **`checkinstall` RHEL path**: `yum clean all` and EPEL/CRB repo setup run only once per bootstrap session, guarded by `_DOTFILES_CHECKINSTALL_RHEL_INIT`. Subsequent `checkinstall` calls within the same session skip the one-time setup and go straight to the package install.
+
+## Profile switching
+
+When a user switches from one profile to another (e.g. `full` → `hypr-minimal`), the linker:
+
+1. Reads the previously-active profile from `${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/active-profile`.
+2. Detects the mismatch and calls `unlink_removed_entries()`, which computes the diff between the old and new profile manifests and removes any symlink that:
+   - exists at the expected destination path, **and**
+   - points exactly into the dotfiles repo (verified by `symlink_points_to()`).
+   Symlinks the user created themselves, or entries managed by `_install.sh` installer hooks (which nest multiple files under the destination directory), are never touched.
+3. Writes the new profile name to the state file before starting the link loop, so future runs detect further switches correctly even if the current run is interrupted.
+
+**Important constraints:**
+- System packages installed by the old profile are **not** auto-removed. After switching, run `sudo apt autoremove` (or distro equivalent) if you want to reclaim disk space.
+- Entries that use `_install.sh` hooks (e.g. `config/core/Code/`) create internal symlinks that `unlink_removed_entries` cannot track. Removing those requires manual cleanup.
+- The state file path honours `XDG_DATA_HOME` when set; test harnesses must pass `XDG_DATA_HOME` explicitly to avoid polluting the real user home.
 
 ## Architecture support
 
