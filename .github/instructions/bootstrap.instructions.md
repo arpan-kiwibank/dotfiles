@@ -73,7 +73,7 @@ When a user switches from one profile to another (e.g. `full` → `hypr-minimal`
 **Important constraints:**
 - Entries that use `_install.sh` hooks (e.g. `config/core/Code/`) are now handled automatically: `unlink_hook_entry()` scans the destination directory for any symlinks whose resolved path falls inside the old entry's source directory, and removes them. Empty directories left behind are also removed. This covers any hook that follows the `$dest_dir/<basename>/...` convention.
 - `run_autoremove()` in `initiate.sh` calls the distro-specific package autoremove (`apt-get autoremove -y` on Debian/Ubuntu, `yum autoremove -y` on RHEL, `pacman -Rns $(pacman -Qdtq)` on Arch) at the end of the `is_update` phase when `DOTFILES_PROFILE_SWITCHED=true`. It removes all orphaned packages, not just dotfiles-related ones, which is the standard system-level cleanup after a desktop-session change.
-- On a `link`-only run, the linker still performs the symlink and hook cleanup but the package phase is skipped. The user is reminded to run `install --profile <new>` to also clean packages.
+- On a `link`-only run, the linker still performs the symlink and hook cleanup but the package phase is skipped. The user is reminded to run `./setup.sh --profile <new>` to trigger the full switch including autoremove. (`setup.sh` is the public interface for all user-facing profile operations; `initiate.sh` sub-commands are internal/power-user.)
 - The state file path honours `XDG_DATA_HOME` when set; test harnesses must pass `XDG_DATA_HOME` explicitly to avoid polluting the real user home.
 
 ## Architecture support
@@ -92,4 +92,4 @@ Neovim (`nvim.sh`) and Helix (`helix.sh`) detect `uname -m` and download:
 
 ## Test harness
 
-`scripts/test-update-harness.sh` mocks: `apt-get`, `yum`, `dnf`, `pacman`, `curl`, `tar` (smart: creates fake extracted dirs), `chsh`, `sudo` (passthrough exec so mocked commands remain reachable within sudo calls). Run it after any change to `initiate.sh`, `utils.sh`, `helix.sh`, or `nvim.sh`.
+`scripts/test-update-harness.sh` mocks: `apt-get`, `yum`, `dnf`, `pacman`, `curl`, `tar` (smart: creates fake extracted dirs), `chsh`, `sudo` (passthrough exec so mocked commands remain reachable within sudo calls). Run it after any change to `initiate.sh`, `home-dir.sh`, `utils.sh`, `helix.sh`, or `nvim.sh`. The harness also asserts the active-profile state file is written correctly and verifies the full profile-switch path (link → detect switch → unlink removed entries → autoremove).
