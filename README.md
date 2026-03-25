@@ -26,8 +26,8 @@ cd dotfiles
 
 ## Profiles
 
-- `full` (default): links the active stack, language-manager configs, and misc config files.
-- `hypr-minimal`: links the active stack with a reduced language-manager set.
+- `full` (default): links the active stack, language-manager configs, optional tools, and misc config files.
+- `hypr-minimal`: links the active stack without optional tools — a leaner setup that still includes all core and desktop config.
 
 ## Switching profiles
 
