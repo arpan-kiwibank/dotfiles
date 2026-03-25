@@ -8,6 +8,7 @@ local-bin/hyprland-wrap.sh
 # core
 config/core/zsh
 config/core/nvim
+config/core/helix
 config/core/tmux
 config/core/git
 config/core/Code

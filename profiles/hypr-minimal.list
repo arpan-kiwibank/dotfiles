@@ -8,6 +8,7 @@ local-bin/hyprland-wrap.sh
 # core
 config/core/zsh
 config/core/nvim
+config/core/helix
 config/core/tmux
 config/core/git
 config/core/Code
@@ -37,7 +38,6 @@ config/desktop/hypr/systemd
 config/desktop/sway/sway
 
 # optional tools
-config/optional/helix
 config/optional/gitui
 config/optional/zk
 config/optional/pet
