@@ -69,14 +69,6 @@ zinit wait'1' lucid \
 	if"(( ${ZSH_VERSION%%.*} > 4.4))" \
 	light-mode for @zsh-users/zsh-history-substring-search
 
-zinit wait'2' lucid \
-	atinit"source $ZHOMEDIR/rc/pluginconfig/per-directory-history_atinit.zsh" \
-	atload"_per-directory-history-set-global-history" \
-	light-mode for @CyberShadow/per-directory-history
-# https://github.com/jimhester/per-directory-history/issues/21
-# https://github.com/jimhester/per-directory-history/issues/27
-#  @jimhester/per-directory-history
-
 
 #--------------------------------#
 # alias
@@ -134,11 +126,11 @@ zinit wait'1a' lucid \
  	for @junegunn/fzf
 if [ "$ZSHRC_BENCH" != "true" ]; then
 zinit ice wait'0c' lucid
-zinit snippet https://github.com/junegunn/fzf/blob/master/shell/key-bindings.zsh
+zinit snippet https://raw.githubusercontent.com/junegunn/fzf/master/shell/key-bindings.zsh
 zinit ice wait'1a' lucid atload"source $ZHOMEDIR/rc/pluginconfig/fzf_completion.zsh_atload.zsh"
-zinit snippet https://github.com/junegunn/fzf/blob/master/shell/completion.zsh
+zinit snippet https://raw.githubusercontent.com/junegunn/fzf/master/shell/completion.zsh
 zinit ice wait'0a' lucid as"program"
-zinit snippet https://github.com/junegunn/fzf/blob/master/bin/fzf-tmux
+zinit snippet https://raw.githubusercontent.com/junegunn/fzf/master/bin/fzf-tmux
 fi
 
 zinit wait'1' lucid \
@@ -231,16 +223,11 @@ zinit wait'1' lucid \
 	atload"alias rm='trash put'" \
 	light-mode for @oberblastmeister/trashy
 
-case "$(uname -m)" in
-	x86_64 | amd64)
-		zinit ice wait'1' lucid as"program" mv'tealdeer-linux-x86_64-musl -> tldr'
-		zinit snippet https://github.com/tealdeer-rs/tealdeer/releases/latest/download/tealdeer-linux-x86_64-musl
-		;;
-	aarch64 | arm64)
-		zinit ice wait'1' lucid as"program" mv'tealdeer-linux-aarch64-musl -> tldr'
-		zinit snippet https://github.com/tealdeer-rs/tealdeer/releases/latest/download/tealdeer-linux-aarch64-musl
-		;;
-esac
+zinit wait'1' lucid blockf nocompletions \
+	from"gh-r" as"program" bpick'*musl*' mv'*tealdeer* -> tldr' \
+	atclone'chown -R $(id -nu):$(id -ng) .' \
+	atpull'%atclone' \
+	light-mode for @tealdeer-rs/tealdeer
 if [ "$ZSHRC_BENCH" != "true" ]; then
 	zinit ice wait'1' lucid as"completion" mv'zsh_tealdeer -> _tldr'
 	zinit snippet https://raw.githubusercontent.com/tealdeer-rs/tealdeer/main/completion/zsh_tealdeer
