@@ -46,4 +46,29 @@ fi
 
 echo "alert after $SEC sec [$(convert_datetime_from_unix_time "$SEC")]"
 
-nohup bash -c "sleep $SEC && notify-send "$DEFAULT_TITLE" "$DEFAULT_MSG" -u critical" >/dev/null 2>&1 &
+function send_notification() {
+  local title="$1"
+  local msg="$2"
+  # WSL: use PowerShell to pop a Windows toast notification
+  if [[ -f /proc/sys/fs/binfmt_misc/WSLInterop ]] && command -v powershell.exe >/dev/null 2>&1; then
+    powershell.exe -Command "
+      Add-Type -AssemblyName System.Windows.Forms
+      \$n = New-Object System.Windows.Forms.NotifyIcon
+      \$n.Icon = [System.Drawing.SystemIcons]::Information
+      \$n.Visible = \$true
+      \$n.ShowBalloonTip(5000, '$title', '$msg', [System.Windows.Forms.ToolTipIcon]::Warning)
+      Start-Sleep -Milliseconds 5500
+      \$n.Dispose()
+    " >/dev/null 2>&1
+    return
+  fi
+  # Bare metal: use notify-send if available
+  if command -v notify-send >/dev/null 2>&1; then
+    notify-send "$title" "$msg" -u critical
+    return
+  fi
+  # Universal fallback: terminal bell + printed message
+  printf '\a%s: %s\n' "$title" "$msg" >/dev/tty 2>/dev/null || true
+}
+
+nohup bash -c "$(declare -f send_notification); sleep $SEC && send_notification '$DEFAULT_TITLE' '$DEFAULT_MSG'" >/dev/null 2>&1 &
