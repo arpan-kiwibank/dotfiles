@@ -88,6 +88,60 @@ Useful variants:
 ./scripts/test-update-harness.sh --keep
 ```
 
+## WSL rebuild checklist
+
+Use this checklist before and after deregistering a WSL distro.
+
+Before wipe:
+
+1. Ensure all repo changes are pushed:
+
+   ```bash
+   git status
+   git log -1
+   ```
+
+1. Export or copy important chat notes to a file outside WSL (for example in your Windows Documents folder).
+1. Record the profile you plan to bootstrap (`full` or `hypr-minimal`).
+
+After reinstall:
+
+1. Reinstall basic prerequisites (`git`, `curl`, `wget`) on the new distro.
+1. Clone and bootstrap:
+
+   ```bash
+   git clone https://github.com/arpan-kiwibank/dotfiles
+   cd dotfiles
+   ./setup.sh --profile full
+   ```
+
+1. Start a fresh shell session:
+
+   ```bash
+   exec zsh
+   ```
+
+1. Validate key tooling:
+
+   ```bash
+   hx --version
+   nvim --version | head -1
+   git --version
+   ```
+
+1. Validate links:
+
+   ```bash
+   ls -la ~/.config/helix
+   ls -la ~/.config/zsh
+   ```
+
+1. (Optional) Run a no-change verification:
+
+   ```bash
+   ./setup.sh --dry-run --profile full
+   ```
+
 ## Controlled real link test
 
 Run the link phase against a temporary HOME directory to validate actual symlink creation safely:
