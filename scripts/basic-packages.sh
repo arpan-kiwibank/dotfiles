@@ -17,8 +17,6 @@ if [[ $distro == "redhat" ]]; then
 	:
 elif [[ $distro == "arch" ]]; then
 	run_cmd sudo pacman -S --noconfirm --needed tar
-elif [[ $distro == "alpine" ]]; then
-	run_cmd sudo apk add g++
 elif [[ $distro == "debian" ]]; then
 	:
 else

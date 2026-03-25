@@ -105,7 +105,6 @@ Fully supported distros, detected automatically via `/etc/os-release`:
 | RHEL / CentOS 8 | `redhat` | `sudo dnf` + `epel-release` + `powertools` |
 | RHEL / CentOS 9+ | `redhat` | `sudo dnf` + `epel-release` + `crb` |
 | Arch Linux | `arch` | `sudo pacman` |
-| Alpine | `alpine` | `sudo apk` |
 
 **Prerequisites on bare metal** (install manually before running `./setup.sh`):
 
@@ -118,9 +117,6 @@ sudo dnf install -y git curl
 
 # Arch
 sudo pacman -S --noconfirm git curl
-
-# Alpine
-sudo apk add git curl bash
 ```
 
 **Full install on bare metal:**
@@ -175,34 +171,10 @@ docker run --rm -v "$PWD:/dotfiles:ro" --env DOTFILES_DRY_RUN=true archlinux:lat
   HOME=/tmp/h XDG_CACHE_HOME=/tmp/c bash /dotfiles/scripts/initiate.sh link --dry-run --profile full'
 ```
 
-**Alpine requires bash** which is not in its base image. On a machine with a corporate proxy (Zscaler), `apk add` fails unless the host CA bundle is injected:
+**Full cross-platform Docker test suite:**
 
 ```bash
-# Alpine with host CA bundle injected (for Zscaler / corporate proxy)
-docker run --rm \
-  -v "$PWD:/dotfiles:ro" \
-  -v /etc/ssl/certs/ca-certificates.crt:/certs.crt:ro \
-  --env SSL_CERT_FILE=/certs.crt \
-  --env DOTFILES_DRY_RUN=true \
-  alpine:3 \
-  sh -c 'apk add --quiet bash git && \
-  HOME=/tmp/h XDG_CACHE_HOME=/tmp/c bash /dotfiles/scripts/initiate.sh link --dry-run --profile full'
-```
-
-**Ubuntu / Debian Docker images** trust the corporate CA natively if the container image was already updated. On the standard Docker Hub images, `apt-get update` works without extra cert injection:
-
-```bash
-docker run --rm -v "$PWD:/dotfiles:ro" --env DOTFILES_DRY_RUN=true ubuntu:24.04 \
-  bash -c 'apt-get update -qq && apt-get install -y -qq git bash && \
-  HOME=/tmp/h XDG_CACHE_HOME=/tmp/c bash /dotfiles/scripts/initiate.sh link --dry-run --profile full'
-```
-
-**`is_wsl()` is always false inside Docker**, even when Docker is running on a WSL2 host. The check requires `/proc/sys/fs/binfmt_misc/WSLInterop` in addition to the kernel string — this file exists only in a real WSL session.
-
-**Full cross-platform Docker test suite** (saved at `/tmp/bootstrap-compat-test.sh` during dev):
-
-```bash
-# Rebuild and run all 9 tests (Ubuntu x2, Fedora, Arch, Alpine, nvim arch, helix arch, is_wsl x2)
+# Run all tests (Ubuntu x2, Fedora, Arch, nvim arch, helix arch, is_wsl x2)
 bash /tmp/bootstrap-compat-test.sh
 ```
 

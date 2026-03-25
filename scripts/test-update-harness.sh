@@ -71,7 +71,6 @@ function run_profile() {
 	create_mock_command yum "$mock_dir" "$tmp_root"
 	create_mock_command dnf "$mock_dir" "$tmp_root"
 	create_mock_command pacman "$mock_dir" "$tmp_root"
-	create_mock_command apk "$mock_dir" "$tmp_root"
 	create_mock_command curl "$mock_dir" "$tmp_root"
 	create_mock_command chsh "$mock_dir" "$tmp_root"
 

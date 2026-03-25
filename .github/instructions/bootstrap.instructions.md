@@ -25,9 +25,9 @@ Call `ensure_sudo` once at the start of any flow that will invoke `checkinstall`
 
 Never call `sudo` directly in new code — use `run_cmd sudo <cmd>` so dry-run suppresses it. The test harness mocks `sudo` with a passthrough; `-v` and `-n` are handled as no-ops.
 
-`whichdistro()` in `utils.sh` maps `/etc/*-release` files to: `debian`, `redhat`, `arch`, `alpine`. Use these four values everywhere.
+`whichdistro()` in `utils.sh` maps `/etc/*-release` files to: `debian`, `redhat`, `arch`. Use these three values everywhere.
 
-`checkinstall()` dispatches to the correct package manager. Always use `checkinstall` instead of calling `apt-get`/`yum`/`pacman`/`apk` directly — it handles `sudo`, RHEL EPEL/CRB setup, and package name aliases (e.g. `python-pip` → `python3-pip` on Debian).
+`checkinstall()` dispatches to the correct package manager. Always use `checkinstall` instead of calling `apt-get`/`yum`/`pacman` directly — it handles `sudo`, RHEL EPEL/CRB setup, and package name aliases (e.g. `python-pip` → `python3-pip` on Debian).
 
 ## is_wsl() behaviour
 
@@ -58,8 +58,6 @@ Neovim (`nvim.sh`) and Helix (`helix.sh`) detect `uname -m` and download:
 | Docker (root) | sudo is a no-op | Mocked in harness | Always false | Image-dependent |
 | WSL2 | Yes | Yes (needs auth) | true | Same as bare metal |
 
-For Docker testing, inject the host CA bundle for Alpine (`SSL_CERT_FILE`). Fedora and Arch have bash pre-installed in their base images and work without any package install step.
-
 ## Test harness
 
-`scripts/test-update-harness.sh` mocks: `apt-get`, `yum`, `dnf`, `pacman`, `apk`, `curl`, `tar` (smart: creates fake extracted dirs), `chsh`, `sudo` (passthrough exec so mocked commands remain reachable within sudo calls). Run it after any change to `initiate.sh`, `utils.sh`, `helix.sh`, or `nvim.sh`.
+`scripts/test-update-harness.sh` mocks: `apt-get`, `yum`, `dnf`, `pacman`, `curl`, `tar` (smart: creates fake extracted dirs), `chsh`, `sudo` (passthrough exec so mocked commands remain reachable within sudo calls). Run it after any change to `initiate.sh`, `utils.sh`, `helix.sh`, or `nvim.sh`.

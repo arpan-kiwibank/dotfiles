@@ -112,9 +112,7 @@ function whichdistro() {
 	elif [ -f /etc/arch-release ]; then
 		echo arch
 		return
-	elif [ -f /etc/alpine-release ]; then
-		echo alpine
-		return
+
 	fi
 }
 
@@ -182,10 +180,6 @@ function checkinstall() {
 		run_cmd sudo yum install -y $pkgs
 	elif [[ $distro == "arch" ]]; then
 		run_cmd sudo pacman -S --noconfirm --needed $pkgs
-	elif [[ $distro == "alpine" ]]; then
-		run_cmd sudo bash -c "$(declare -f append_file_if_not_exist); append_file_if_not_exist http://dl-3.alpinelinux.org/alpine/edge/testing/ /etc/apk/repositories"
-		pkgs=${pkgs//python-pip/py-pip}
-		run_cmd sudo apk add $pkgs
 	else
 		:
 	fi

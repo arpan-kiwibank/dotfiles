@@ -49,12 +49,6 @@ function try_install_helix_from_pkg_manager() {
 				return 0
 			fi
 			;;
-		alpine)
-			if apk search -x helix >/dev/null 2>&1; then
-				checkinstall helix
-				return 0
-			fi
-			;;
 	esac
 
 	return 1
