@@ -4,7 +4,7 @@ set -euo pipefail
 
 function helpmsg() {
 	print_default "Usage: ${BASH_SOURCE[0]:-$0} [--debug | -d] [--dry-run | -n] [initiate options] [--help | -h]" 0>&2
-	print_default "  initiate options are passed through (e.g. --profile hypr-minimal --with-legacy)."
+	print_default "  initiate options are passed through (e.g. --profile hypr-minimal)."
 	print_default ""
 }
 

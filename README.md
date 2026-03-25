@@ -2,14 +2,14 @@
 
 ## Overview
 
-This repository bootstraps a Linux workspace with a profile-driven linker and a repository layout that separates active configs from optional and legacy ones.
+This repository bootstraps a Linux workspace with a profile-driven linker and a repository layout that separates active configs from optional and historical ones.
 
 Supported stack:
 
 - Core: zsh, neovim, tmux, wezterm, git, VS Code
 - Primary desktop: Hyprland, Waybar, Dunst, portal integration
 - Alternate desktop: Sway
-- Legacy compatibility: archived X11 and older WM or launcher stacks
+- Historical archive: retained in git as reference only
 
 ## Supported OS
 
@@ -21,7 +21,6 @@ Supported stack:
 home/        direct links into $HOME
 local-bin/   links into ~/.local/bin
 config/      active and optional ~/.config entries
-archive/     legacy configs retained in git but not linked by minimal profile
 profiles/    manifest files that define what each install profile links
 scripts/     bootstrap and maintenance scripts
 ```
@@ -45,9 +44,8 @@ The linker no longer scans the repository tree heuristically. It links the entri
 
 ## Profiles
 
-- `full` (default): links the active stack, optional tools, language-manager configs, misc config files, and the legacy archive manifest.
-- `hypr-minimal`: links the active stack without the legacy archive manifest.
-- `--with-legacy`: adds the legacy archive manifest to `hypr-minimal`.
+- `full` (default): links the active stack, optional tools, language-manager configs, and misc config files.
+- `hypr-minimal`: links the active stack with a reduced language-manager set.
 
 Examples:
 
@@ -57,9 +55,6 @@ Examples:
 
 # reduced profile for a cleaner Hyprland setup
 ./setup.sh --profile hypr-minimal
-
-# keep legacy configs even in minimal profile
-./setup.sh --profile hypr-minimal --with-legacy
 ```
 
 ## Dry-run verification
@@ -135,8 +130,6 @@ After bootstrap:
 | desktop | primary | `config/desktop/hypr/*` |
 | desktop | alternate | `config/desktop/sway/sway` |
 | optional tools | optional | `config/optional/*`, `config/lang/*`, `config/misc/*` |
-| legacy | archived | `archive/config/*` |
-
 ## Notes
 
 - Installer hooks such as `config/core/Code/_install.sh` and `config/core/Code - Insiders/_install.sh` still run instead of plain directory symlinking.

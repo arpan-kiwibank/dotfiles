@@ -39,20 +39,15 @@ function append_manifest_entries() {
 function load_profile_entries() {
 	local dotfiles_dir="$1"
 	local profile="$2"
-	local with_legacy="$3"
-	local array_name="$4"
+	local array_name="$3"
 	local profiles_dir="$dotfiles_dir/profiles"
 
 	case "$profile" in
 		full)
 			append_manifest_entries "$profiles_dir/full.list" "$array_name"
-			append_manifest_entries "$profiles_dir/legacy.list" "$array_name"
 			;;
 		hypr-minimal)
 			append_manifest_entries "$profiles_dir/hypr-minimal.list" "$array_name"
-			if [[ "$with_legacy" == "true" ]]; then
-				append_manifest_entries "$profiles_dir/legacy.list" "$array_name"
-			fi
 			;;
 		*)
 			print_error "Unsupported profile manifest: $profile"
@@ -76,7 +71,7 @@ function should_ignore_manifest_entry() {
 			local-bin/*)
 				[[ "$ignored_entry" == "local-bin/$manifest_basename" || "$ignored_entry" == "$manifest_basename" ]] && return 0
 				;;
-			config/* | archive/config/*)
+			config/*)
 				[[ "$ignored_entry" == ".config/$manifest_basename" || "$ignored_entry" == "$manifest_basename" ]] && return 0
 				;;
 		esac
@@ -102,7 +97,7 @@ function link_manifest_entry() {
 		local-bin/*)
 			backup_and_link "$source_path" "$HOME/.local/bin" "$backup_root/.local/bin"
 			;;
-		config/* | archive/config/*)
+		config/*)
 			backup_and_link "$source_path" "${XDG_CONFIG_HOME:-$HOME/.config}" "$backup_root/.config"
 			;;
 		*)
@@ -220,13 +215,9 @@ function link_to_homedir() {
 	fi
 
 	local profile="${DOTFILES_PROFILE:-full}"
-	local with_legacy="${DOTFILES_WITH_LEGACY:-false}"
 	local -a manifest_entries=()
-	load_profile_entries "$dotfiles_dir" "$profile" "$with_legacy" manifest_entries
+	load_profile_entries "$dotfiles_dir" "$profile" manifest_entries
 	print_notice "Using profile manifest: $profile"
-	if [[ "$with_legacy" == "true" && "$profile" == "hypr-minimal" ]]; then
-		print_notice "Including legacy manifest entries"
-	fi
 	if [[ "$HOME" != "$dotfiles_dir" ]]; then
 		local manifest_entry
 		for manifest_entry in "${manifest_entries[@]}"; do
