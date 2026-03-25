@@ -56,6 +56,29 @@ function load_profile_entries() {
 	esac
 }
 
+# Guard: hypr-minimal must never include config/optional/ entries.
+# Exits non-zero if violations are found, so accidental additions are caught
+# early — both during development and at link time.
+function validate_no_optional_in_minimal() {
+	local dotfiles_dir="$1"
+	local profile="$2"
+	[[ "$profile" != "hypr-minimal" ]] && return 0
+
+	local manifest="$dotfiles_dir/profiles/hypr-minimal.list"
+	[[ -f "$manifest" ]] || return 0
+
+	local violations
+	violations=$(grep -v '^[[:space:]]*#\|^[[:space:]]*$' "$manifest" \
+		| grep '^config/optional/' || true)
+
+	if [[ -n "$violations" ]]; then
+		print_error "hypr-minimal profile must not include config/optional/ entries:"
+		printf '%s\n' "$violations" >&2
+		return 1
+	fi
+	return 0
+}
+
 function should_ignore_manifest_entry() {
 	local manifest_entry="$1"
 	shift
@@ -408,6 +431,10 @@ function link_to_homedir() {
 	local -a manifest_entries=()
 	load_profile_entries "$dotfiles_dir" "$profile" manifest_entries
 	print_notice "Using profile manifest: $profile"
+
+	# Abort early if hypr-minimal has accidentally gained config/optional/ entries.
+	validate_no_optional_in_minimal "$dotfiles_dir" "$profile" \
+		|| exit 1
 
         if [[ "$HOME" == "$dotfiles_dir" ]]; then
                 return 0

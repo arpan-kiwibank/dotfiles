@@ -18,6 +18,11 @@ source "$ZPLG_HOME/bin/zinit.zsh"
 autoload -Uz _zinit
 (( ${+_comps} )) && _comps[zinit]=_zinit
 
+# Read the active dotfiles profile from the bootstrap state file.
+# Defaults to 'full' so a first shell session (before bootstrap) loads everything.
+typeset -g DOTFILES_ACTIVE_PROFILE
+DOTFILES_ACTIVE_PROFILE="${$(command cat "${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/active-profile" 2>/dev/null):-full}"
+
 
 #==============================================================#
 ## Plugin load                                                ##
@@ -149,14 +154,7 @@ zinit wait'2' lucid \
 	atinit"source $ZHOMEDIR/rc/pluginconfig/zsh-fzf-widgets_atinit.zsh" \
 	light-mode for @amaya382/zsh-fzf-widgets
 
-if [[ "$ZSHRC_BENCH" != "true" && -L "${XDG_CONFIG_HOME:-$HOME/.config}/zeno" ]]; then
-	zinit wait'2' lucid silent blockf depth"1" \
-		atclone'deno cache --no-check ./src/cli.ts' \
-		atpull'%atclone' \
-		atinit"source $ZHOMEDIR/rc/pluginconfig/zeno_atinit.zsh" \
-		atload"source $ZHOMEDIR/rc/pluginconfig/zeno_atload.zsh" \
-		for @yuki-yano/zeno.zsh
-fi
+
 
 
 #--------------------------------#
@@ -299,15 +297,33 @@ zinit wait'1' lucid \
 
 
 
-# snippet — only load pet when its config is linked (i.e. active profile includes it)
-if [[ -L "${XDG_CONFIG_HOME:-$HOME/.config}/pet" ]]; then
-[[ $- == *i* ]] && stty -ixon
-zinit wait'1' lucid blockf nocompletions \
-        from"gh-r" as"program" pick"pet" bpick'*linux_amd64.tar.gz' \
-        atclone'chown -R $(id -nu):$(id -ng) .; zinit creinstall -q knqyf263/pet' \
-        atpull'%atclone' \
-        atload"source $ZHOMEDIR/rc/pluginconfig/pet_atload.zsh" \
-        for @knqyf263/pet
+#--------------------------------------------------------------#
+# Optional-tool plugins — only loaded when 'full' profile is  #
+# active. To add a new tool: add its zinit block here.        #
+# $DOTFILES_ACTIVE_PROFILE is read from the bootstrap state   #
+# file at startup (see top of this file).                     #
+#--------------------------------------------------------------#
+if [[ "$DOTFILES_ACTIVE_PROFILE" == "full" ]]; then
+
+        # zeno: snippet/completion engine (requires deno)
+        if [[ "$ZSHRC_BENCH" != "true" ]]; then
+                zinit wait'2' lucid silent blockf depth"1" \
+                        atclone'deno cache --no-check ./src/cli.ts' \
+                        atpull'%atclone' \
+                        atinit"source $ZHOMEDIR/rc/pluginconfig/zeno_atinit.zsh" \
+                        atload"source $ZHOMEDIR/rc/pluginconfig/zeno_atload.zsh" \
+                        for @yuki-yano/zeno.zsh
+        fi
+
+        # pet: command snippet manager
+        [[ $- == *i* ]] && stty -ixon
+        zinit wait'1' lucid blockf nocompletions \
+                from"gh-r" as"program" pick"pet" bpick'*linux_amd64.tar.gz' \
+                atclone'chown -R $(id -nu):$(id -ng) .; zinit creinstall -q knqyf263/pet' \
+                atpull'%atclone' \
+                atload"source $ZHOMEDIR/rc/pluginconfig/pet_atload.zsh" \
+                for @knqyf263/pet
+
 fi
 
 # etc #

@@ -56,6 +56,61 @@ function assert_symlink_target() {
 	[[ "$(readlink -f "$symlink_path")" == "$expected_target" ]] || fail "Unexpected target for $symlink_path"
 }
 
+# Static lint: hypr-minimal.list must not contain config/optional/ entries.
+# Also warns about any config/optional/ dirs in the repo that are absent from
+# full.list (so new optional tools don't silently become dead weight).
+function run_manifest_lint_test() {
+	local dotfiles_dir="$1"
+
+	# 1. hypr-minimal must have zero config/optional/ entries
+	local violations
+	violations=$(grep -v '^[[:space:]]*#\|^[[:space:]]*$' \
+		"$dotfiles_dir/profiles/hypr-minimal.list" \
+		| grep '^config/optional/' || true)
+	if [[ -n "$violations" ]]; then
+		fail "manifest-lint: hypr-minimal.list has config/optional/ entries: $violations"
+	fi
+	echo "[PASS] manifest-lint: hypr-minimal.list: no config/optional/ entries"
+
+	# 2. Warn about repo optional dirs absent from full.list
+	local -a missing=()
+	local d
+	while IFS= read -r -d '' d; do
+		local entry="config/optional/$(basename "$d")"
+		grep -qxF "$entry" "$dotfiles_dir/profiles/full.list" 2>/dev/null \
+			|| missing+=("$entry")
+	done < <(command find "$dotfiles_dir/config/optional" -mindepth 1 -maxdepth 1 \
+		-type d -print0 2>/dev/null | sort -z)
+	if [[ ${#missing[@]} -gt 0 ]]; then
+		echo "  [WARN] manifest-lint: config/optional/ dirs not in full.list: ${missing[*]}"
+		echo "         Consider adding them to full.list or moving to archive/."
+	else
+		echo "[PASS] manifest-lint: full.list: all config/optional/ dirs accounted for"
+	fi
+
+	# 3. Dynamic guard: bootstrap must abort when hypr-minimal.list has an optional entry.
+	#    Use a temp dir with a patched copy of the repo profiles.
+	local tmp_dir
+	tmp_dir=$(mktemp -d "${TMPDIR:-/tmp}/dotfiles-manifest-lint.XXXXXX")
+	cp -r "$dotfiles_dir" "$tmp_dir/dotfiles"
+	local patched_list="$tmp_dir/dotfiles/profiles/hypr-minimal.list"
+	printf '\nconfig/optional/gitui\n' >> "$patched_list"
+
+	local tmp_home="$tmp_dir/home"
+	mkdir -p "$tmp_home"
+	local out
+	out=$(HOME="$tmp_home" XDG_DATA_HOME="$tmp_home/.local/share" \
+		bash "$tmp_dir/dotfiles/scripts/initiate.sh" link --profile hypr-minimal 2>&1) \
+		&& { rm -rf "$tmp_dir"; fail "manifest-lint: expected abort for hypr-minimal with optional entry, but command succeeded"; } \
+		|| true  # non-zero exit is expected
+	if ! printf '%s\n' "$out" | grep -q "config/optional"; then
+		rm -rf "$tmp_dir"
+		fail "manifest-lint: expected an error mentioning config/optional, got: $out"
+	fi
+	rm -rf "$tmp_dir"
+	echo "[PASS] manifest-lint: runtime guard aborts on hypr-minimal with optional entry"
+}
+
 function run_profile() {
 	local dotfiles_dir="$1"
 	local profile="$2"
@@ -429,6 +484,7 @@ function main() {
 		run_profile "$dotfiles_dir" "$profile" "$keep_tmp"
 	done
 
+	run_manifest_lint_test "$dotfiles_dir"
 	run_profile_switch_test "$dotfiles_dir" "$keep_tmp"
 
 	if [[ "$run_docker" == "true" ]]; then

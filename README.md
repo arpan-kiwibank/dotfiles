@@ -111,7 +111,7 @@ Runs the full update pipeline with mocked package managers, download commands, a
 ./scripts/test-update-harness.sh --docker     # + in-container distro tests
 ```
 
-The harness verifies: package installs dispatched correctly, local-bin symlinks created, idempotent re-run fast-path, active-profile state file written, and the full profile-switch path (unlink removed entries → autoremove).
+The harness verifies: package installs dispatched correctly, local-bin symlinks created, idempotent re-run fast-path, active-profile state file written, full profile-switch path (unlink removed entries → cache/compdump/zinit purge → autoremove), and **manifest lint** (hypr-minimal.list must not contain `config/optional/` entries, verified both statically and by a live runtime guard check).
 
 The `--docker` flag additionally runs `scripts/test-docker-distro.sh` inside `fedora:latest`, `archlinux:latest`, and `debian:stable-slim` — verifying distro detection, bash syntax compatibility, and correct package manager dispatch on each platform. Requires Docker. Skips gracefully if Docker is not available.
 
@@ -203,4 +203,6 @@ This mounts the repo read-only and runs `scripts/test-docker-distro.sh` inside e
 - `config/core/Code/_install.sh` and `config/core/Code - Insiders/_install.sh` run as installer hooks instead of plain directory symlinking. On a profile switch, `unlink_hook_entry()` cleans up these internal symlinks automatically.
 - `.linkignore` entries are honoured when they match a manifest entry or destination basename.
 - The active profile is persisted in `~/.local/share/dotfiles/active-profile` (XDG_DATA_HOME-aware). `setup.sh` reads this on every run and performs cleanup automatically when the profile changes.
+- **`config/optional/` entries belong only in `full.list`** — never in `hypr-minimal.list`. Bootstrap enforces this at link time and the harness enforces it statically; both will abort if the rule is violated. `zsh` reads `DOTFILES_ACTIVE_PROFILE` from the same state file so optional-tool zinit plugins (pet, zeno, etc.) are not loaded at all on `hypr-minimal`.
+- **Adding a new optional tool**: (1) create `config/optional/<name>/`, (2) add `config/optional/<name>` to `profiles/full.list`, (3) add any zinit plugin inside the `if [[ "$DOTFILES_ACTIVE_PROFILE" == "full" ]]` block in `config/core/zsh/rc/pluginlist.zsh`, then run the harness.
 
