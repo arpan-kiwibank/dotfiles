@@ -4,13 +4,6 @@
 
 This repository bootstraps a Linux workspace with a profile-driven linker and a repository layout that separates active configs from optional ones.
 
-Supported stack:
-
-- Core: zsh, neovim, tmux, git, VS Code
-- Primary desktop: Hyprland, Waybar, Dunst, portal integration
-- Alternate desktop: Sway
-- Historical archive: retained in git as reference only
-
 ## Repository layout
 
 ```text
@@ -21,80 +14,47 @@ profiles/    manifest files that define what each install profile links
 scripts/     bootstrap and maintenance scripts
 ```
 
-The linker no longer scans the repository tree heuristically. It links the entries declared in the profile manifests under `profiles/`.
+Linking is manifest-driven from `profiles/*.list`.
 
 ## Install
 
-1. Download
-
-   ```bash
-   git clone https://github.com/arpan-kiwibank/dotfiles
-   cd dotfiles
-   ```
-
-1. Install
-
-   ```bash
-   ./setup.sh
-   ```
+```bash
+git clone https://github.com/arpan-kiwibank/dotfiles
+cd dotfiles
+./setup.sh --profile full       # or --profile hypr-minimal
+```
 
 ## Profiles
 
 - `full` (default): links the active stack, language-manager configs, and misc config files.
 - `hypr-minimal`: links the active stack with a reduced language-manager set.
 
-> **WSL note:** When bootstrapping inside WSL2, `config/desktop/**` entries are automatically skipped regardless of profile. Hyprland and Sway both require direct DRM/GPU access that WSL2 does not expose. The core shell, editor, git, and tool configs are linked normally. Pass `--allow-desktop` to override this behaviour.
+> **WSL note:** `config/desktop/**` entries are automatically skipped in WSL2 (no DRM/GPU access). Pass `--allow-desktop` to override.
 
-Examples:
+## Dry-run
 
 ```bash
-# default profile
-./setup.sh
-
-# reduced profile for a cleaner Hyprland setup
-./setup.sh --profile hypr-minimal
+./setup.sh --dry-run                      # all phases
+./scripts/initiate.sh link --dry-run      # link only
+./scripts/initiate.sh update --dry-run    # update only
 ```
 
-## Dry-run verification
+## Update harness
 
-Use dry-run mode to verify install, link, and update phases without changing your system:
-
-```bash
-./setup.sh --dry-run
-```
-
-You can also run a single phase:
+Runs the `update` path with mocked package, download, and archive commands in a temporary HOME:
 
 ```bash
-./scripts/initiate.sh link --dry-run
-./scripts/initiate.sh update --dry-run
-```
-
-## Mocked update harness
-
-Use the reusable harness below to exercise the real `update` path with mocked package, download, and archive commands inside a temporary HOME:
-
-```bash
-./scripts/test-update-harness.sh
-```
-
-Useful variants:
-
-```bash
+./scripts/test-update-harness.sh              # both profiles
 ./scripts/test-update-harness.sh hypr-minimal
 ./scripts/test-update-harness.sh full
-./scripts/test-update-harness.sh --keep
+./scripts/test-update-harness.sh --keep       # keep temp dir on success
 ```
 
-## Bare metal vs Docker bootstrap
+## Bare metal Linux
 
-Bootstrap behaviour differs between a live machine and a Docker container. Use the correct steps to avoid failures.
+Distros detected automatically via `/etc/os-release`:
 
-### Bare metal Linux
-
-Fully supported distros, detected automatically via `/etc/os-release`:
-
-| Distro family | Detected as | Package manager used |
+| Distro family | Detected as | Package manager |
 |---|---|---|
 | Ubuntu / Debian | `debian` | `sudo apt-get` |
 | Fedora | `redhat` | `sudo yum / dnf` |
@@ -103,7 +63,7 @@ Fully supported distros, detected automatically via `/etc/os-release`:
 | Arch Linux | `arch` | `sudo pacman` |
 | Alpine | `alpine` | ❌ not supported — exits with a clear error |
 
-**Prerequisites on bare metal** (install manually before running `./setup.sh`):
+**Prerequisites** (install before running `./setup.sh`):
 
 ```bash
 # Debian / Ubuntu
@@ -116,177 +76,72 @@ sudo dnf install -y git curl
 sudo pacman -S --noconfirm git curl
 ```
 
-**Full install on bare metal:**
+**Sudo prompt** — `ensure_sudo()` authenticates once upfront and keeps the ticket alive for the full bootstrap run. You are prompted exactly once. Skipped when running as root or with `--dry-run`.
 
-```bash
-git clone https://github.com/arpan-kiwibank/dotfiles
-cd dotfiles
-./setup.sh --profile full       # or --profile hypr-minimal
-```
+**Architecture** — x86_64 and aarch64 are both supported, detected automatically via `uname -m`.
 
-**Sudo prompt** — bootstrap calls `ensure_sudo()` once before any package installs begin. You will see:
-
-```
-Bootstrap will install system packages and needs elevated privileges.
-You will be prompted for your password once. Sudo access is then kept
-active for the duration of bootstrap so you are not asked again.
-
-[sudo] password for <user>:
-```
-
-This prompt appears exactly once regardless of distro. A background keepalive prevents the sudo ticket from expiring during slow downloads (Neovim nightly, Helix release). Running as root (Docker/CI) or with `--dry-run` skips it entirely.
-
-**Architecture support:**
-
-Both x86_64 and aarch64 (arm64) are supported for the binary install phase.
-`neovim_nightly` downloads `nvim-linux-x86_64.tar.gz` or `nvim-linux-arm64.tar.gz` automatically.
-Helix binary fallback downloads `x86_64-linux.tar.xz` or `aarch64-linux.tar.xz` automatically.
-No flags are needed — architecture is detected at runtime via `uname -m`.
-
-**If helix or neovim fails to download** (network restricted, proxy issues), bootstrap will print a warning and continue. Re-run the individual script after the environment is operational:
+**If helix or neovim fails to download** (network or proxy issues), bootstrap warns and continues. Re-run manually:
 
 ```bash
 bash scripts/helix.sh
 bash scripts/nvim.sh
 ```
 
-### Docker (testing / CI)
+## Docker (testing / CI)
 
-Docker runs as root, so `sudo` is a no-op. The distro logic still works correctly.
-
-**Fedora and Arch base images include bash** — no network install step is needed to run bootstrap logic tests:
+Docker runs as root — `sudo` is a no-op. Fedora and Arch base images include bash and work without a package install step. Run the harness for a quick cross-distro check:
 
 ```bash
-# Test distro detection + dry-run link on Fedora (no package install needed)
-docker run --rm -v "$PWD:/dotfiles:ro" --env DOTFILES_DRY_RUN=true fedora:40 \
-  bash -c 'source /dotfiles/scripts/utils.sh && whichdistro && \
-  HOME=/tmp/h XDG_CACHE_HOME=/tmp/c bash /dotfiles/scripts/initiate.sh link --dry-run --profile full'
-
-# Same for Arch
-docker run --rm -v "$PWD:/dotfiles:ro" --env DOTFILES_DRY_RUN=true archlinux:latest \
-  bash -c 'source /dotfiles/scripts/utils.sh && whichdistro && \
-  HOME=/tmp/h XDG_CACHE_HOME=/tmp/c bash /dotfiles/scripts/initiate.sh link --dry-run --profile full'
-```
-
-**Full cross-platform Docker test suite:**
-
-```bash
-# Run all tests (Ubuntu x2, Fedora, Arch, nvim arch, helix arch, is_wsl x2)
-bash /tmp/bootstrap-compat-test.sh
+./scripts/test-update-harness.sh
 ```
 
 ## WSL rebuild checklist
 
-Use this checklist before and after deregistering a WSL distro.
+**Before wipe:**
 
-Before wipe:
+1. Push all changes: `git status && git log -1`
+2. Save any notes outside WSL.
+3. Note your profile (`full` or `hypr-minimal`).
 
-1. Ensure all repo changes are pushed:
+**After reinstall:**
 
-   ```bash
-   git status
-   git log -1
-   ```
-
-1. Export or copy important chat notes to a file outside WSL (for example in your Windows Documents folder).
-1. Record the profile you plan to bootstrap (`full` or `hypr-minimal`).
-
-After reinstall:
-
-1. Reinstall basic prerequisites (`git`, `curl`, `wget`) on the new distro.
+1. Install prerequisites: `sudo apt-get install -y git curl wget`
 1. Clone and bootstrap:
 
    ```bash
-   git clone https://github.com/arpan-kiwibank/dotfiles
-   cd dotfiles
+   git clone https://github.com/arpan-kiwibank/dotfiles && cd dotfiles
    ./setup.sh --profile full
    ```
 
-   > Desktop entries (`config/desktop/**`) are **not** linked in WSL — this is intentional. Pass `--allow-desktop` only if you have a specific reason.
+   > `config/desktop/**` is not linked in WSL. Pass `--allow-desktop` only if needed.
 
-1. Start a fresh shell session — **required before using `hx`, `nvim`, or any tool installed to `~/.local/bin`**:
-
-   ```bash
-   exec zsh
-   ```
-
-   > Bootstrap finishes in a bash session. `~/.local/bin` is only added to `PATH` by `.zshenv`, which loads when zsh starts. Running `exec zsh` is the step that makes `hx`, `nvim`, `tldr`, and other installed binaries visible.
-
-1. Populate the `tldr` cache (empty on a fresh install):
-
-   ```bash
-   tldr --update
-   ```
-
-1. Validate key tooling:
-
-   ```bash
-   hx --version
-   nvim --version | head -1
-   git --version
-   ```
-
-1. Validate links:
-
-   ```bash
-   ls -la ~/.config/helix
-   ls -la ~/.config/zsh
-   ```
-
-1. (Optional) Run a no-change verification:
-
-   ```bash
-   ./setup.sh --dry-run --profile full
-   ```
-
-## Controlled real link test
-
-Run the link phase against a temporary HOME directory to validate actual symlink creation safely:
-
-```bash
-tmp_root=/tmp/dotfiles-real-link
-mkdir -p "$tmp_root/home/.config" "$tmp_root/cache"
-HOME="$tmp_root/home" XDG_CACHE_HOME="$tmp_root/cache" ./scripts/initiate.sh link --profile hypr-minimal
-```
-
-## Neovim nightly notes
-
-The bootstrap script installs Neovim nightly from GitHub release assets and currently supports Linux architectures:
-
-- x86_64 (amd64)
-- arm64 (aarch64)
-
-After bootstrap:
-
-1. Start a new zsh session
+1. Start a new shell (`~/.local/bin` is on `PATH` only after zsh loads `.zshenv`):
 
    ```bash
    exec zsh
    ```
 
-1. Install Neovim plugins
+1. Populate the tldr cache: `tldr --update`
+1. Install Neovim plugins: `nvim --headless -c 'Lazy! sync' -c 'qall'`
+1. Validate: `hx --version && nvim --version | head -1`
+1. (Optional) Dry-run verify: `./setup.sh --dry-run --profile full`
 
-   ```bash
-   nvim --headless -c 'Lazy! sync' -c 'qall'
-   ```
+## Stack
 
-## Supported stack table
+| area | repo path |
+|---|---|
+| shell | `config/core/zsh`, `home/.zshenv` |
+| editor | `config/core/nvim`, `config/core/Code` |
+| terminal | `config/core/tmux` |
+| git | `config/core/git`, `config/core/gh` |
+| desktop (primary) | `config/desktop/hypr/*` |
+| desktop (alternate) | `config/desktop/sway/sway` |
+| optional tools | `config/optional/*` |
+| language managers | `config/lang/*` |
+| misc | `config/misc/*` |
 
-| area | status | repo path |
-| ---- | ------ | --------- |
-| shell | core | `config/core/zsh`, `home/.zshenv` |
-| editor | core | `config/core/nvim`, `config/core/Code` |
-| terminal | core | `config/core/tmux` |
-| git | core | `config/core/git`, `config/core/gh` |
-| desktop | primary | `config/desktop/hypr/*` |
-| desktop | alternate | `config/desktop/sway/sway` |
-| optional tools | available in repo (not linked by active profiles) | `config/optional/*` |
-| language managers | active | `config/lang/*` |
-| misc | active | `config/misc/*` |
 ## Notes
 
-- Installer hooks such as `config/core/Code/_install.sh` and `config/core/Code - Insiders/_install.sh` still run instead of plain directory symlinking.
-- Existing `.linkignore` entries are still honored when they match a manifest entry or the destination basename.
-
-
+- `config/core/Code/_install.sh` and `config/core/Code - Insiders/_install.sh` run as installer hooks instead of plain directory symlinking.
+- `.linkignore` entries are honoured when they match a manifest entry or destination basename.
 
