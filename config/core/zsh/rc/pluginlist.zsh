@@ -356,16 +356,6 @@ zinit wait'0' lucid nocompletions \
 	light-mode for @neovim/neovim
 	#atclone"command cp -rf nvim*/* $ZPFX; echo "" > ._zinit/is_release" \
 
-# wezterm
-# test $(openssl version | awk '{print $2}' | awk -F '.' '{print $1}') -eq 1
-# -> bpick"*20.04.tar.xz"
-zinit wait'2' lucid nocompletions \
-	from"gh-r" ver"nightly"  as"program" bpick"*22.04.tar.xz" \
-	atclone"command cp -rf wezterm/usr/* $ZPFX; ln -snf $ZPFX/bin/wezterm ~/.local/bin/x-terminal-emulator; echo "" > ._zinit/is_release" \
-	atpull'%atclone' \
-	run-atpull \
-	light-mode for @wez/wezterm
-
 # node (for coc.nvim)
 # zinit wait'0' lucid id-as=node as='readurl|command' \
 	#   nocompletions nocompile extract \

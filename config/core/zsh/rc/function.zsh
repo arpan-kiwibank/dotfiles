@@ -679,28 +679,10 @@ function xauth-paste() {
 	xauth list
 }
 
-function rename_wezterm_title() {
-	echo "\x1b]1337;SetUserVar=panetitle=$(echo -n $1 | base64)\x07"
-}
-
 function change_background() {
 	local color=${1:-0000ff}
 	# Set default background to bright blue
 	printf "\x1b]11;#${color}\x1b\\"
-}
-
-function wezterm() {
-  if [ "$#" == 0 ]; then
-    command wezterm
-    return
-  fi
-  if [ "$1" == "ssh" ]; then
-    # if [ "$2" =~ ".*example.com" ]; then
-      command wezterm $@ -- sh -c 'printf "\033]1337;SetUserVar=%s=%s\007" production `echo -n 1 | base64`; eval $SHELL'
-      return
-    # fi
-  fi
-  command wezterm $@
 }
 
 function twitter-mp4() {

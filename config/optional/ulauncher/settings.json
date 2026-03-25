@@ -13,7 +13,7 @@
   "render_on_screen": "mouse-pointer-monitor",
   "show_recent_apps": "5",
   "show_tray_icon": true,
-  "terminal_command": "x-terminal-emulator start",
+  "terminal_command": "x-terminal-emulator",
   "theme_name": "dark",
   "tray_icon_name": "ulauncher-indicator-symbolic"
 }

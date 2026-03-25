@@ -9,7 +9,6 @@ local-bin/hyprland-wrap.sh
 config/core/zsh
 config/core/nvim
 config/core/tmux
-config/core/wezterm
 config/core/git
 config/core/Code
 config/core/Code - Insiders

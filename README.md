@@ -6,7 +6,7 @@ This repository bootstraps a Linux workspace with a profile-driven linker and a 
 
 Supported stack:
 
-- Core: zsh, neovim, tmux, wezterm, git, VS Code
+- Core: zsh, neovim, tmux, git, VS Code
 - Primary desktop: Hyprland, Waybar, Dunst, portal integration
 - Alternate desktop: Sway
 - Historical archive: retained in git as reference only
@@ -44,7 +44,7 @@ The linker no longer scans the repository tree heuristically. It links the entri
 
 ## Profiles
 
-- `full` (default): links the active stack, optional tools, language-manager configs, and misc config files.
+- `full` (default): links the active stack, language-manager configs, and misc config files.
 - `hypr-minimal`: links the active stack with a reduced language-manager set.
 
 Examples:
@@ -125,26 +125,17 @@ After bootstrap:
 | ---- | ------ | --------- |
 | shell | core | `config/core/zsh`, `home/.zshenv` |
 | editor | core | `config/core/nvim`, `config/core/Code` |
-| terminal | core | `config/core/tmux`, `config/core/wezterm` |
+| terminal | core | `config/core/tmux` |
 | git | core | `config/core/git`, `config/core/gh` |
 | desktop | primary | `config/desktop/hypr/*` |
 | desktop | alternate | `config/desktop/sway/sway` |
-| optional tools | optional | `config/optional/*`, `config/lang/*`, `config/misc/*` |
+| optional tools | available in repo (not linked by active profiles) | `config/optional/*` |
+| language managers | active | `config/lang/*` |
+| misc | active | `config/misc/*` |
 ## Notes
 
 - Installer hooks such as `config/core/Code/_install.sh` and `config/core/Code - Insiders/_install.sh` still run instead of plain directory symlinking.
 - Existing `.linkignore` entries are still honored when they match a manifest entry or the destination basename.
-
-## Frequently used shortcuts
-
-### WezTerm
-
-| key | action |
-| --- | ------ |
-| Alt-h/j/k/l | switch window |
-| Alt-j | close window |
-| Alt-k | create window |
-| S-Up/Down/Left/Right | switch pane |
 
 
 

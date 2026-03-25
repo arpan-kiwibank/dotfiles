@@ -9,7 +9,6 @@ local-bin/hyprland-wrap.sh
 config/core/zsh
 config/core/nvim
 config/core/tmux
-config/core/wezterm
 config/core/git
 config/core/Code
 config/core/Code - Insiders
@@ -36,28 +35,6 @@ config/desktop/hypr/systemd
 
 # alternate desktop
 config/desktop/sway/sway
-
-# optional tools
-config/optional/helix
-config/optional/gitui
-config/optional/zk
-config/optional/pet
-config/optional/ideavim
-config/optional/espanso
-config/optional/qutebrowser
-config/optional/zeno
-config/optional/ulauncher
-config/optional/pmy
-config/optional/gdb
-config/optional/efm-langserver
-config/optional/luaformatter
-config/optional/luacheck
-config/optional/prs
-config/optional/cspell
-config/optional/i3status-rust
-config/optional/autokey
-config/optional/hawck
-config/optional/conky
 
 # language managers
 config/lang/rtx
