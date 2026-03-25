@@ -222,7 +222,7 @@ zinit wait'1' lucid \
 
 # zinit wait'0' lucid \
 	#   light-mode for @t413/zsh-background-notify
-if [[ -z "$SSH_CONNECTION" ]]; then
+if [[ -z "$SSH_CONNECTION" ]] && builtin command -v notify-send >/dev/null 2>&1; then
 	zinit wait'0' lucid \
 		atload"source $ZHOMEDIR/rc/pluginconfig/zsh-auto-notify_atload.zsh" \
 		light-mode for @MichaelAquilina/zsh-auto-notify
@@ -280,12 +280,19 @@ zinit wait'1' lucid \
 	atload"alias rm='trash put'" \
 	light-mode for @oberblastmeister/trashy
 
-zinit wait'1' lucid \
-	from"gh-r" as"program" mv'tealdeer* -> tldr' \
-	light-mode for @dbrgn/tealdeer
+case "$(uname -m)" in
+	x86_64 | amd64)
+		zinit ice wait'1' lucid as"program" mv'tealdeer-linux-x86_64-musl -> tldr'
+		zinit snippet https://github.com/tealdeer-rs/tealdeer/releases/latest/download/tealdeer-linux-x86_64-musl
+		;;
+	aarch64 | arm64)
+		zinit ice wait'1' lucid as"program" mv'tealdeer-linux-aarch64-musl -> tldr'
+		zinit snippet https://github.com/tealdeer-rs/tealdeer/releases/latest/download/tealdeer-linux-aarch64-musl
+		;;
+esac
 if [ "$ZSHRC_BENCH" != "true" ]; then
 	zinit ice wait'1' lucid as"completion" mv'zsh_tealdeer -> _tldr'
-	zinit snippet https://github.com/dbrgn/tealdeer/blob/main/completion/zsh_tealdeer
+	zinit snippet https://raw.githubusercontent.com/tealdeer-rs/tealdeer/main/completion/zsh_tealdeer
 fi
 
 zinit wait'1' lucid \
