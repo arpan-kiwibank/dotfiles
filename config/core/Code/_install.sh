@@ -5,7 +5,7 @@ set -ue
 current_dir=$(dirname "${BASH_SOURCE[0]:-$0}")
 cd "$current_dir"
 
-target_dir="$HOME/.config/$(basename "$(realpath "$current_dir")")"
+target_dir="$HOME/.config/$(basename "$current_dir")"
 src_list=$(command find . -mindepth 1 -type f | command grep -v "$(basename "$0")")
 
 for src in $src_list; do

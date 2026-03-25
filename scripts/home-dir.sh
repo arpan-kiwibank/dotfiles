@@ -16,6 +16,101 @@ function contains_exact() {
 	return 1
 }
 
+function append_manifest_entries() {
+	local manifest_path="$1"
+	local array_name="$2"
+	local -n manifest_entries_ref="$array_name"
+
+	if [[ ! -f "$manifest_path" ]]; then
+		print_error "Profile manifest not found: $manifest_path"
+		exit 1
+	fi
+
+	local entry
+	while IFS= read -r entry || [[ -n "$entry" ]]; do
+		entry=${entry%$'\r'}
+		[[ -z "$entry" || "$entry" == \#* ]] && continue
+		if ! contains_exact "$entry" "${manifest_entries_ref[@]}"; then
+			manifest_entries_ref+=("$entry")
+		fi
+	done < "$manifest_path"
+}
+
+function load_profile_entries() {
+	local dotfiles_dir="$1"
+	local profile="$2"
+	local with_legacy="$3"
+	local array_name="$4"
+	local profiles_dir="$dotfiles_dir/profiles"
+
+	case "$profile" in
+		full)
+			append_manifest_entries "$profiles_dir/full.list" "$array_name"
+			append_manifest_entries "$profiles_dir/legacy.list" "$array_name"
+			;;
+		hypr-minimal)
+			append_manifest_entries "$profiles_dir/hypr-minimal.list" "$array_name"
+			if [[ "$with_legacy" == "true" ]]; then
+				append_manifest_entries "$profiles_dir/legacy.list" "$array_name"
+			fi
+			;;
+		*)
+			print_error "Unsupported profile manifest: $profile"
+			exit 1
+			;;
+	esac
+}
+
+function should_ignore_manifest_entry() {
+	local manifest_entry="$1"
+	shift
+	local manifest_basename
+	manifest_basename=$(basename "$manifest_entry")
+	local ignored_entry
+	for ignored_entry in "$@"; do
+		[[ "$ignored_entry" == "$manifest_entry" ]] && return 0
+		case "$manifest_entry" in
+			home/*)
+				[[ "$ignored_entry" == "$manifest_basename" ]] && return 0
+				;;
+			local-bin/*)
+				[[ "$ignored_entry" == "local-bin/$manifest_basename" || "$ignored_entry" == "$manifest_basename" ]] && return 0
+				;;
+			config/* | archive/config/*)
+				[[ "$ignored_entry" == ".config/$manifest_basename" || "$ignored_entry" == "$manifest_basename" ]] && return 0
+				;;
+		esac
+	done
+	return 1
+}
+
+function link_manifest_entry() {
+	local dotfiles_dir="$1"
+	local manifest_entry="$2"
+	local backup_root="$3"
+	local source_path="$dotfiles_dir/$manifest_entry"
+
+	if [[ ! -e "$source_path" && ! -L "$source_path" ]]; then
+		print_warning "Skip missing manifest entry: $manifest_entry"
+		return
+	fi
+
+	case "$manifest_entry" in
+		home/*)
+			backup_and_link "$source_path" "$HOME" "$backup_root"
+			;;
+		local-bin/*)
+			backup_and_link "$source_path" "$HOME/.local/bin" "$backup_root/.local/bin"
+			;;
+		config/* | archive/config/*)
+			backup_and_link "$source_path" "${XDG_CONFIG_HOME:-$HOME/.config}" "$backup_root/.config"
+			;;
+		*)
+			print_warning "Skip unsupported manifest entry: $manifest_entry"
+			;;
+	esac
+}
+
 function backup_path_if_exists() {
 	local target_path="$1"
 	local backupdir="$2"
@@ -94,27 +189,6 @@ function install_by_local_installer() {
 	return 1
 }
 
-function link_config_dir() {
-	local dotfiles_dir=$1
-	local backupdir="${2}/.config"
-	local -a config_linkignore=("${@:3}")
-	mkdir_not_exist "$backupdir"
-	local dest_dir="${HOME}/.config" # ${XDG_CONFIG_HOME}
-	mkdir_not_exist "$dest_dir"
-
-	shopt -s nullglob
-	for f in "$dotfiles_dir"/.config/??*; do
-		local f_filename
-		f_filename=$(basename "$f")
-		if contains_exact "$f_filename" "${config_linkignore[@]}"; then
-			print_notice "Skip (.config ignore): $f_filename"
-			continue
-		fi
-		backup_and_link "$f" "$dest_dir" "$backupdir"
-	done
-	shopt -u nullglob
-}
-
 function link_to_homedir() {
 	print_notice "backup old dotfiles..."
 	local tmp_date
@@ -137,52 +211,31 @@ function link_to_homedir() {
 		".git"
 		".gitmodules"
 	)
-	local -a config_linkignore=()
 	if [[ -e "$dotfiles_dir/.linkignore" ]]; then
 		while IFS= read -r entry; do
+			entry=${entry%$'\r'}
 			[[ -z "$entry" || "$entry" == \#* ]] && continue
-			if [[ "$entry" == .config/* ]]; then
-				config_linkignore+=("${entry#.config/}")
-				continue
-			fi
 			linkignore+=("$entry")
 		done <"$dotfiles_dir/.linkignore"
 	fi
 
 	local profile="${DOTFILES_PROFILE:-full}"
 	local with_legacy="${DOTFILES_WITH_LEGACY:-false}"
-	if [[ "$profile" == "hypr-minimal" && "$with_legacy" != "true" ]]; then
-		config_linkignore+=(
-			"i3"
-			"i3-resurrect"
-			"river"
-			"wayfire"
-			"qtile"
-			"polybar"
-			"eww"
-			"ags"
-			"deadd"
-			"fcitx"
-			"rofi"
-			"wofi"
-			"alacritty"
-			"termite"
-			"asdf"
-			"anyenv"
-			"luakit"
-		)
-		print_notice "Applying hypr-minimal config filters"
+	local -a manifest_entries=()
+	load_profile_entries "$dotfiles_dir" "$profile" "$with_legacy" manifest_entries
+	print_notice "Using profile manifest: $profile"
+	if [[ "$with_legacy" == "true" && "$profile" == "hypr-minimal" ]]; then
+		print_notice "Including legacy manifest entries"
 	fi
 	if [[ "$HOME" != "$dotfiles_dir" ]]; then
-		shopt -s nullglob
-		for f in "$dotfiles_dir"/.??*; do
-			local f_filename
-			f_filename=$(basename "$f")
-			contains_exact "$f_filename" "${linkignore[@]}" && continue
-			[[ "$f_filename" == ".config" ]] && link_config_dir "$dotfiles_dir" "$backupdir" "${config_linkignore[@]}" && continue
-			backup_and_link "$f" "$HOME" "$backupdir"
+		local manifest_entry
+		for manifest_entry in "${manifest_entries[@]}"; do
+			if should_ignore_manifest_entry "$manifest_entry" "${linkignore[@]}"; then
+				print_notice "Skip (ignore): $manifest_entry"
+				continue
+			fi
+			link_manifest_entry "$dotfiles_dir" "$manifest_entry" "$backupdir"
 		done
-		shopt -u nullglob
 	fi
 }
 

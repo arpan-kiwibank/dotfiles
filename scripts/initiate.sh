@@ -25,6 +25,12 @@ function main() {
 	local current_dir
 	current_dir=$(dirname "${BASH_SOURCE[0]:-$0}")
 	source "$current_dir"/utils.sh
+	local dotfiles_dir
+	if command git -C "$current_dir" rev-parse --show-toplevel >/dev/null 2>&1; then
+		dotfiles_dir="$(command git -C "$current_dir" rev-parse --show-toplevel)"
+	else
+		dotfiles_dir="$(builtin cd "$current_dir/.." && pwd -P)"
+	fi
 
 	local is_install="false"
 	local is_link="false"
@@ -136,7 +142,9 @@ function main() {
 		source "$current_dir"/basic-packages.sh
 		source "$current_dir"/nvim.sh
 		run_cmd mkdir -p "$HOME/.local/bin"
-		run_cmd ln -snf "$current_dir"/bin/* "$HOME/.local/bin/"
+		if compgen -G "$dotfiles_dir/local-bin/*" >/dev/null; then
+			run_cmd ln -snf "$dotfiles_dir"/local-bin/* "$HOME/.local/bin/"
+		fi
 	fi
 
 	print_info ""
