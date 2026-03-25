@@ -125,6 +125,14 @@ function main() {
 
 	if [[ "$is_link" = true ]]; then
 		source "$current_dir"/home-dir.sh
+		
+		# Fix permissions on zsh completion directories to satisfy compinit security checks
+		if [[ -d "$HOME/.config/zsh/completions.local" ]]; then
+			run_cmd chmod 700 "$HOME/.config/zsh" 2>/dev/null || true
+			run_cmd chmod 700 "$HOME/.config/zsh/completions.local" 2>/dev/null || true
+			run_cmd chmod 644 "$HOME/.config/zsh/completions.local"/* 2>/dev/null || true
+		fi
+		
 		print_info ""
 		print_info "#####################################################"
 		print_info "$(basename "${BASH_SOURCE[0]:-$0}") link success!!!"
