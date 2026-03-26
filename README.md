@@ -46,21 +46,18 @@ Any `profiles/*.list` file is a valid profile. The harness can test them too:
 **System packages** (via distro package manager):
 `zsh`, `git`, `tmux`, `curl`, `wget`, `jq`, `sqlite`, `python3-pip`, and more.
 
-**Editors** (downloaded from GitHub releases):
+**Bootstrap tools** (installed at bootstrap alongside system packages):
 
-| Tool | Command |
-|------|---------|
-| Neovim nightly | `nvim` |
-| Helix | `hx` |
+| Tool | Command | How |
+|------|---------|-----|
+| Neovim nightly | `nvim` | GitHub releases |
+| Helix | `hx` | GitHub releases / pkg manager |
+| GitHub CLI | `gh` | Official pkg manager (apt/dnf/pacman/apk) |
+| GitHub Copilot CLI | `copilot` | Official installer (`curl -fsSL https://gh.io/copilot-install \| bash`) |
+| Claude Code | `claude` | Official installer (`curl -fsSL https://claude.ai/install.sh \| bash`) |
 
-**AI coding tools** (downloaded from GitHub releases at bootstrap):
-
-| Tool | Command | Purpose |
-|------|---------|---------|
-| GitHub Copilot CLI | `gh copilot` | Shell, git, and gh command explanation; `gh copilot suggest`, `gh copilot explain` |
-| Claude Code | `claude` | Anthropic's agentic coding CLI (official installer, all platforms) |
-
-> First-run auth: `gh auth login` (for Copilot), `claude` (prompts for Anthropic login on first use).
+> First-run auth: `gh auth login`, `copilot /login`, `claude`.
+> All tools install to `~/.local/bin` for non-root users.
 
 **Shell tools** (installed by [zinit](https://github.com/zdharma-continuum/zinit) on first zsh start):
 
@@ -83,7 +80,6 @@ _User-facing programs:_
 | mocword | `mocword` | Word prediction (used by completions) |
 | mise | `mise` | Polyglot version manager |
 | direnv | `direnv` | Auto-load `.envrc` per directory |
-| gh | `gh` | GitHub CLI |
 | ghq | `ghq` | Structured git repo manager |
 | ghg | `ghg` | Install GitHub release binaries |
 | emojify | `emojify` | Replace `:emoji:` shortcodes in text |

@@ -6,30 +6,31 @@ current_dir=$(dirname "${BASH_SOURCE[0]:-$0}")
 source "$current_dir"/utils.sh
 
 # ─── GitHub Copilot CLI ──────────────────────────────────────────────────────
-# Installed as a gh CLI extension (Go binary, no npm/node required).
-# Usage: gh copilot suggest "<task>", gh copilot explain "<cmd>"
-# First-run auth: gh auth login
+# Standalone binary installer — no gh CLI or npm required.
+# Installs to ~/.local/bin/copilot (non-root) or /usr/local/bin/copilot (root).
+# Ref: https://docs.github.com/en/copilot/how-tos/copilot-cli/set-up-copilot-cli/install-copilot-cli
+# Usage: copilot <question>
+# First-run auth: copilot /login
 
 function install_gh_copilot() {
-    if ! command -v gh >/dev/null 2>&1; then
-        print_warning "gh CLI not found — skipping GitHub Copilot CLI"
-        print_notice "  gh should have been installed by scripts/gh.sh — re-run: ./setup.sh update"
+    if command -v copilot >/dev/null 2>&1; then
+        print_notice "GitHub Copilot CLI already installed: $(copilot --version 2>/dev/null || echo 'version unknown')"
         return 0
     fi
 
-    if gh extension list 2>/dev/null | grep -q "github/gh-copilot"; then
-        print_notice "GitHub Copilot CLI extension already installed"
+    print_info "Installing GitHub Copilot CLI (official installer)"
+    if is_dry_run; then
+        print_notice "[dry-run] would run: curl -fsSL https://gh.io/copilot-install | bash"
         return 0
     fi
-
-    print_info "Installing GitHub Copilot CLI (gh extension)"
-    run_cmd gh extension install github/gh-copilot
-    print_success "GitHub Copilot CLI installed: gh copilot suggest / gh copilot explain"
+    curl -fsSL https://gh.io/copilot-install | bash
+    print_success "GitHub Copilot CLI installed: copilot"
 }
 
 # ─── Claude Code ────────────────────────────────────────────────────────────
-# Anthropic's agentic coding CLI.
-# Uses the official cross-platform installer from https://code.claude.com/docs/en/quickstart
+# Standalone binary installer — no npm required.
+# Installs to ~/.local/bin/claude.
+# Ref: https://code.claude.com/docs/en/quickstart
 # First-run auth: claude (prompts for Anthropic login)
 
 function install_claude_code() {
