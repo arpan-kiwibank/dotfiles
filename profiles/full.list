@@ -11,8 +11,6 @@ config/core/nvim
 config/core/helix
 config/core/tmux
 config/core/git
-config/core/Code
-config/core/Code - Insiders
 config/core/readline
 config/core/bat
 config/core/gh
@@ -40,6 +38,8 @@ config/desktop/Kvantum
 config/lang/mise
 
 # optional tools
+config/optional/Code
+config/optional/Code - Insiders
 config/optional/gitui
 config/optional/zk
 config/optional/pet

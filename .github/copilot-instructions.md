@@ -7,7 +7,8 @@ This repository is organized by folder domain. When working here, inspect the sm
 - `scripts/` and `setup.sh`: bootstrap, install, update, dry-run, and linker flow.
 - `profiles/`: manifest-driven linking; active profiles are `full` and `minimal`.
 - `config/core/zsh/`, `home/.zshenv`, `local-bin/`: shell behavior, zsh startup, completions, and local helpers.
-- `config/core/nvim/`, `config/core/Code/`, `config/core/Code - Insiders/`: editor configuration.
+- `config/core/nvim/`: Neovim editor configuration.
+- `config/optional/Code/`, `config/optional/Code - Insiders/`: VS Code configuration (optional).
 - `config/desktop/`: Hyprland-specific (`hypr/`) and shared desktop tools (Waybar, Dunst, GTK, fonts, input method, etc.).
 - `config/lang/`: language/version managers.
 - `config/misc/`: active standalone config files.
@@ -39,5 +40,5 @@ This repository is organized by folder domain. When working here, inspect the sm
 
 - `scripts/` often depends on `profiles/`.
 - `config/core/zsh/` may depend on `home/.zshenv` and `local-bin/`.
-- `config/core/nvim/` and `config/core/Code/` are separate editor domains; inspect both only when the request is editor-wide.
+- `config/core/nvim/` and `config/optional/Code/` are separate editor domains; inspect both only when the request is editor-wide.
 - `config/desktop/` changes should stay desktop-scoped unless they alter shared launch or shell behavior.

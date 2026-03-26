@@ -22,7 +22,8 @@ You are a routing-first agent for this dotfiles repository. Your job is to class
 - `setup.sh`, `scripts/`: bootstrap, install, update, link, dry-run, validation harnesses
 - `profiles/`: manifest-driven linking and profile contents
 - `config/core/zsh/`, `home/.zshenv`, `local-bin/`: shell behavior, zsh startup, completions, shell helpers
-- `config/core/nvim/`, `config/core/Code/`, `config/core/Code - Insiders/`: editor behavior
+- `config/core/nvim/`: Neovim editor behavior
+- `config/optional/Code/`, `config/optional/Code - Insiders/`: VS Code editor behavior
 - `config/desktop/`: Hyprland-specific (`hypr/`), shared desktop tools (Waybar, Dunst, GTK, fonts, input method)
 - `config/lang/`: language and version manager configuration
 - `config/misc/`: standalone active config files

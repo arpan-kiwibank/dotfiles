@@ -8,7 +8,7 @@ ${input:Describe the VS Code change or issue}
 
 Work inside the dotfiles repository with a VS Code-first scope.
 
-- Start in `config/core/Code/` or `config/core/Code - Insiders/`.
+- Start in `config/optional/Code/` or `config/optional/Code - Insiders/`.
 - Treat VS Code and VS Code Insiders as separate profiles; inspect both only when the request spans both.
 - Copilot and CopilotChat configuration lives here; isolate it from Neovim context.
 - Do not pull in Neovim context unless the task is genuinely editor-wide.

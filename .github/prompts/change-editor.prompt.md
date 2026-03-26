@@ -8,7 +8,7 @@ ${input:Describe the editor change or issue}
 
 Work inside the dotfiles repository with an editor-first scope.
 
-- Start in the smallest relevant editor subtree: `config/core/nvim/`, `config/core/Code/`, or `config/core/Code - Insiders/`.
+- Start in the smallest relevant editor subtree: `config/core/nvim/`, `config/optional/Code/`, or `config/optional/Code - Insiders/`.
 - Treat Neovim and VS Code as separate editor domains and inspect both only when the request is editor-wide.
 - Do not pull in shell or bootstrap context unless the editor behavior truly depends on it.
 - Preserve the existing Neovim Lua structure and existing VS Code settings layout.

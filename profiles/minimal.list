@@ -10,8 +10,6 @@ config/core/nvim
 config/core/helix
 config/core/tmux
 config/core/git
-config/core/Code
-config/core/Code - Insiders
 config/core/readline
 config/core/bat
 config/core/gh

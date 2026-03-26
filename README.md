@@ -76,6 +76,8 @@ Any `profiles/*.list` file is a valid profile. The harness can test them too:
 
 | Tool | What it does |
 |------|-------------|
+| Code | VS Code settings, extensions, keybindings |
+| Code - Insiders | VS Code Insiders settings |
 | pet | CLI snippet manager (`pet new`, `pet exec`, `pet search`) |
 | zeno | fzf-powered snippet/completion engine (requires Deno) |
 | gitui | Terminal UI for git |

@@ -213,14 +213,14 @@ function unlink_removed_entries() {
 
 # For a manifest entry managed by _install.sh hooks, remove all symlinks inside the
 # destination directory tree that resolve back into the entry's source directory.
-# This covers entries like config/core/Code/ where _install.sh links individual files
+# This covers entries like config/optional/Code/ where _install.sh links individual files
 # rather than one top-level symlink.
 function unlink_hook_entry() {
 	local dotfiles_dir="$1"
 	local old_entry="$2"
 	local source_path="$dotfiles_dir/$old_entry"
-	local resolved_source
-	resolved_source=$(readlink -f "$source_path" 2>/dev/null) || return 0
+	local resolved_dotfiles
+	resolved_dotfiles=$(readlink -f "$dotfiles_dir" 2>/dev/null) || return 0
 
 	# _install.sh convention: target dir is $dest_dir/<basename>
 	local dest_dir
@@ -235,7 +235,10 @@ function unlink_hook_entry() {
 	local f f_resolved
 	while IFS= read -r -d '' f; do
 		f_resolved=$(readlink -f "$f" 2>/dev/null) || continue
-		if [[ "$f_resolved" == "$resolved_source/"* ]]; then
+		# Match against the whole dotfiles repo, not just the entry dir,
+		# because _install.sh hooks may create symlinks pointing to sibling
+		# entries (e.g. Code-Insiders links files from Code).
+		if [[ "$f_resolved" == "$resolved_dotfiles/"* ]]; then
 			print_notice "Unlinking hook entry (profile switch): $f"
 			run_cmd command rm -f "$f"
 		fi
