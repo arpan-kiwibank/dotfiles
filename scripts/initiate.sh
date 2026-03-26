@@ -262,10 +262,14 @@ function main() {
 		run_cmd mkdir -p "$HOME/.local/bin"
 		for bin_file in "$dotfiles_dir"/local-bin/*; do
 			[[ -e "$bin_file" ]] || continue
-			if [[ "$(basename "$bin_file")" == "hyprland-wrap.sh" \
-				&& ( "${DOTFILES_SKIP_DESKTOP:-false}" == "true" || "${DOTFILES_PROFILE:-full}" != "full" ) ]]; then
-				print_notice "Skip: local-bin/hyprland-wrap.sh (desktop not in profile)"
-				continue
+			local bin_name
+			bin_name=$(basename "$bin_file")
+			if [[ "$bin_name" == "hyprland-wrap.sh" ]]; then
+				if [[ "${DOTFILES_SKIP_DESKTOP:-false}" == "true" ]] \
+					|| ! grep -qxF "local-bin/hyprland-wrap.sh" "$dotfiles_dir/profiles/${DOTFILES_PROFILE}.list" 2>/dev/null; then
+					print_notice "Skip: local-bin/hyprland-wrap.sh (not in profile manifest)"
+					continue
+				fi
 			fi
 			run_cmd ln -snf "$bin_file" "$HOME/.local/bin/"
 		done

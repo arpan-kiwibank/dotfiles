@@ -21,7 +21,7 @@ description: "Use when: changing zsh startup, zinit plugins, shell functions, co
 - Always use `lucid` to suppress the download banner.
 - Use `wait'1'` by default. `wait'0a'`/`wait'0b'`/`wait'0c'` are reserved for prompt, completion, and syntax-highlighting — do not promote a new plugin into `wait'0'`.
 - Core plugins go above the `if full` block; optional-tool plugins go inside it.
-- See `docs/DEVELOPMENT.md` for full zinit block templates.
+- Core plugins go above the optional block; optional-tool plugins go inside it.
 
 ## Optional-tool zinit plugins
 
@@ -30,14 +30,14 @@ description: "Use when: changing zsh startup, zinit plugins, shell functions, co
 All optional-tool zinit blocks must live inside:
 
 ```zsh
-if [[ "$DOTFILES_ACTIVE_PROFILE" == "full" ]]; then
+if [[ "$DOTFILES_ACTIVE_PROFILE" != "minimal" ]]; then
     # add new optional-tool zinit blocks here
 fi
 ```
 
-This prevents zinit from re-downloading tools cleaned up during a profile switch. Do not use per-tool symlink guards — put the block here instead.
+This loads optional plugins for `full` and any custom profile, but keeps `minimal` bare. Do not use per-tool symlink guards — put the block here instead.
 
-To add a new optional-tool plugin: (1) add config to `config/optional/<name>/`, (2) add `config/optional/<name>` to `full.list` only, (3) add the zinit block inside the `full`-only guard, (4) run the harness. See `docs/DEVELOPMENT.md` for full templates and guard-verification commands.
+To add a new optional-tool plugin: (1) add config to `config/optional/<name>/`, (2) add `config/optional/<name>` to `full.list` only, (3) add the zinit block inside the optional guard, (4) run the harness. See `docs/DEVELOPMENT.md` for full templates and guard-verification commands.
 
 ## System packages
 

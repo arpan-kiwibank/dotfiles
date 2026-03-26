@@ -298,12 +298,13 @@ zinit wait'1' lucid \
 
 
 #--------------------------------------------------------------#
-# Optional-tool plugins — only loaded when 'full' profile is  #
-# active. To add a new tool: add its zinit block here.        #
+# Optional-tool plugins — loaded for any profile except       #
+# 'minimal'. Custom profiles that include config/optional/    #
+# entries will get these plugins automatically.               #
 # $DOTFILES_ACTIVE_PROFILE is read from the bootstrap state   #
 # file at startup (see top of this file).                     #
 #--------------------------------------------------------------#
-if [[ "$DOTFILES_ACTIVE_PROFILE" == "full" ]]; then
+if [[ "$DOTFILES_ACTIVE_PROFILE" != "minimal" ]]; then
 
         # zeno: snippet/completion engine (requires deno)
         if [[ "$ZSHRC_BENCH" != "true" ]]; then
