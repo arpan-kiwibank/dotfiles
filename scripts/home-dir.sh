@@ -450,9 +450,14 @@ function link_to_homedir() {
 	[[ -f "$state_file" ]] && prev_profile=$(< "$state_file")
 
 	if [[ -n "$prev_profile" && "$prev_profile" != "$profile" ]]; then
-		print_notice "Profile switch: $prev_profile → $profile"
-		unlink_removed_entries "$dotfiles_dir" "$prev_profile" manifest_entries
-		purge_switch_residues "$dotfiles_dir" "$prev_profile" manifest_entries
+		local prev_manifest="$dotfiles_dir/profiles/${prev_profile}.list"
+		if [[ -f "$prev_manifest" ]]; then
+			print_notice "Profile switch: $prev_profile → $profile"
+			unlink_removed_entries "$dotfiles_dir" "$prev_profile" manifest_entries
+			purge_switch_residues "$dotfiles_dir" "$prev_profile" manifest_entries
+		else
+			print_warning "Previous profile '$prev_profile' has no manifest — skipping unlink (treating as fresh install)"
+		fi
 		export DOTFILES_PROFILE_SWITCHED=true
 	fi
 
