@@ -1,6 +1,7 @@
 # Arpan's dotfiles
 
 [![Test](https://github.com/arpan-kiwibank/dotfiles/actions/workflows/test.yml/badge.svg)](https://github.com/arpan-kiwibank/dotfiles/actions/workflows/test.yml)
+[![Security](https://github.com/arpan-kiwibank/dotfiles/actions/workflows/security.yml/badge.svg)](https://github.com/arpan-kiwibank/dotfiles/actions/workflows/security.yml)
 
 Bootstrap a Linux workspace in one command on Debian/Ubuntu, Fedora/RHEL, or Arch Linux.
 

@@ -76,7 +76,8 @@ function run_manifest_lint_test() {
 	local -a missing=()
 	local d
 	while IFS= read -r -d '' d; do
-		local entry="config/optional/$(basename "$d")"
+		local entry
+		entry="config/optional/$(basename "$d")"
 		grep -qxF "$entry" "$dotfiles_dir/profiles/full.list" 2>/dev/null \
 			|| missing+=("$entry")
 	done < <(command find "$dotfiles_dir/config/optional" -mindepth 1 -maxdepth 1 \

@@ -229,7 +229,8 @@ function unlink_hook_entry() {
 		*)        return 0 ;;
 	esac
 
-	local target_dir="$dest_dir/$(basename "$source_path")"
+	local target_dir
+	target_dir="$dest_dir/$(basename "$source_path")"
 	[[ -d "$target_dir" ]] || return 0
 
 	local f f_resolved

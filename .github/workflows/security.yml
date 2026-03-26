@@ -1,0 +1,112 @@
+name: Security
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+# Only read access is needed — no write, no deployment.
+permissions: read-all
+
+jobs:
+  # ── Secret scanning (gitleaks) ────────────────────────────────────────────────
+  # Scans for accidentally committed credentials, tokens, and private keys
+  # across the entire working tree.
+  secrets:
+    name: Secret scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # full history
+
+      - name: Install gitleaks
+        run: |
+          GITLEAKS_VERSION=$(curl -fsSL "https://api.github.com/repos/gitleaks/gitleaks/releases/latest" \
+            | grep '"tag_name"' | grep -oE 'v[0-9]+\.[0-9]+\.[0-9]+' | head -1)
+          curl -fsSL "https://github.com/gitleaks/gitleaks/releases/download/${GITLEAKS_VERSION}/gitleaks_${GITLEAKS_VERSION#v}_linux_x64.tar.gz" \
+            | tar -xz gitleaks
+          sudo mv gitleaks /usr/local/bin/gitleaks
+
+      - name: Run gitleaks
+        run: gitleaks detect --source . --no-git --verbose --redact
+
+  # ── Shell script analysis (ShellCheck) ───────────────────────────────────────
+  # Static analysis of all bootstrap scripts. Flags real bugs and constructs
+  # that mask exit codes, enable injection, or produce unintended behavior.
+  shellcheck:
+    name: ShellCheck
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install shellcheck
+        run: sudo apt-get install -y --no-install-recommends shellcheck
+
+      - name: Run shellcheck
+        run: |
+          find scripts/ -name "*.sh" -print0 \
+            | xargs -0 shellcheck --severity=warning --format=gcc
+
+  # ── Custom policy checks ──────────────────────────────────────────────────────
+  # Grep-based rules that enforce local security conventions:
+  #   - no http:// in scripts (insecure downloads)
+  #   - no TLS bypass flags
+  #   - no world-writable chmod in scripts
+  #   - no hardcoded token/key patterns
+  #   - .gitignore covers required sensitive file patterns
+  custom:
+    name: Custom checks
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: No insecure http:// in scripts
+        run: |
+          if grep -rn --include="*.sh" "http://" scripts/; then
+            echo "::error::Insecure http:// URL found in scripts/ — use https://"
+            exit 1
+          fi
+          echo "PASS: no http:// in scripts/"
+
+      - name: No TLS bypass flags
+        run: |
+          if grep -rn --include="*.sh" -E -- "--insecure|--no-check-certificate" scripts/; then
+            echo "::error::TLS verification bypass flag found in scripts/"
+            exit 1
+          fi
+          echo "PASS: no TLS bypass flags"
+
+      - name: No world-writable chmod in scripts
+        run: |
+          if grep -rn --include="*.sh" -E "chmod[[:space:]]+((-[a-zA-Z]+[[:space:]]+)*)([0-9]*7[[:space:]]|777|o\+w|a\+w)" scripts/; then
+            echo "::error::World-writable chmod found in scripts/"
+            exit 1
+          fi
+          echo "PASS: no world-writable chmod in scripts/"
+
+      - name: No hardcoded token patterns
+        run: |
+          FAIL=0
+          # GitHub personal access tokens, AWS access key IDs, OpenAI/Anthropic keys
+          if grep -rn -E \
+            "ghp_[A-Za-z0-9]{36}|github_pat_[A-Za-z0-9_]{82}|AKIA[0-9A-Z]{16}|sk-[A-Za-z0-9]{48}" \
+            --exclude-dir=".git" .; then
+            echo "::error::Possible hardcoded credential detected"
+            FAIL=1
+          fi
+          [ "$FAIL" -eq 0 ] && echo "PASS: no hardcoded token patterns"
+          exit "$FAIL"
+
+      - name: .gitignore covers sensitive file patterns
+        run: |
+          FAIL=0
+          for pattern in "id_rsa" ".env" ".netrc" "*.pem" "*.key" "hosts.yml"; do
+            if ! grep -qF "$pattern" .gitignore; then
+              echo "::error::Pattern '$pattern' missing from .gitignore"
+              FAIL=1
+            fi
+          done
+          [ "$FAIL" -eq 0 ] && echo "PASS: .gitignore covers all required sensitive patterns"
+          exit "$FAIL"
