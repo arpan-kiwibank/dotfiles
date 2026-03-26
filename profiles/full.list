@@ -45,10 +45,7 @@ config/optional/gitui
 config/optional/zk
 config/optional/pet
 config/optional/ideavim
-config/optional/espanso
-config/optional/qutebrowser
 config/optional/zeno
-config/optional/ulauncher
 config/optional/pmy
 config/optional/gdb
 config/optional/efm-langserver
