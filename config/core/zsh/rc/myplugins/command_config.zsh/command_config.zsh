@@ -25,63 +25,7 @@ fi
 #==============================================================#
 if existsCommand terraform; then
 	autoload -U +X bashcompinit && bashcompinit
-	complete -o nospace -C /usr/bin/terraform terraform
-fi
-
-##==============================================================#
-### nerdctl completion
-##==============================================================#
-if existsCommand nerdctl; then
-	if [[ ! -e "$HOME/.config/zsh/completions.local/_nerdctl" ]]; then
-		nerdctl completion zsh > ~/.config/zsh/completions.local/_nerdctl
-	fi
-	compctl -K _nerdctl docker
-fi
-
-# this is not required from v2 https://github.com/docker/compose/issues/8550
-##==============================================================#
-### docker-compose completion
-##==============================================================#
-#if existsCommand docker-compose; then
-#  if [[ ! -e "$HOME/.config/zsh/completions.local/_docker-compose" ]]; then
-#    curl -Ls https://raw.githubusercontent.com/docker/compose/$(docker-compose version --short)/contrib/completion/zsh/_docker-compose > ~/.config/zsh/completions.local/_docker-compose
-#  fi
-#fi
-
-#==============================================================#
-## pip completion
-#==============================================================#
-if existsCommand pip; then
-	eval "$(pip completion --zsh)"
-fi
-
-
-##==============================================================#
-### pipenv completion
-##==============================================================#
-# bug: tab completion with autosuggestion and autocompletion
-#if existsCommand pipenv; then
-#  eval "$(pipenv --completion)"
-#fi
-
-##==============================================================#
-### poetry completion
-##==============================================================#
-if existsCommand poetry; then
-	if [[ ! -e "$HOME/.config/zsh/completions.local/_poetry" ]]; then
-		poetry completions zsh > ~/.config/zsh/completions.local/_poetry
-	fi
-fi
-
-
-#==============================================================#
-## cargo completion
-#==============================================================#
-if existsCommand cargo; then
-	d=$(readlink -f $HOME/.rustup/toolchains/*/share/zsh/site-functions)
-	if [ -d "$d" ]; then
-		fpath=($d $fpath)
-	fi
+	complete -o nospace -C "$(command -v terraform)" terraform
 fi
 
 
@@ -112,12 +56,4 @@ if existsCommand github-copilot-cli; then
 	eval "$(github-copilot-cli alias -- "$0")"
 fi
 
-#==============================================================#
-## fasd
-#==============================================================#
-if existsCommand fasd; then
-	eval "$(fasd --init auto)"
-	alias d='fasd -d'
-	alias f='fasd -f'
-	alias vf='f -e vim'
-fi
+
