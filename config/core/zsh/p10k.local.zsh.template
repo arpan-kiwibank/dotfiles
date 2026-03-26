@@ -14,11 +14,7 @@
 # ─── Font / icon mode ──────────────────────────────────────────────────────────
 # The default is 'ascii' (repo default — safe on ephemeral/CI machines).
 # Enable Nerd Font icons on machines where the terminal has a Nerd Font installed
-# (e.g. WezTerm with a patched font).
-#
-# IMPORTANT: POWERLEVEL9K_MODE is read once at plugin load time.
-# Changes here take effect on the NEXT new terminal (open a new tab/window).
-# Running 'source ~/.config/zsh/p10k.local.zsh' alone will NOT change icons.
+# (e.g. WezTerm with a patched font):
 #
 #   typeset -g POWERLEVEL9K_MODE=nerdfont-complete
 #   typeset -g POWERLEVEL9K_ICON_PADDING=moderate

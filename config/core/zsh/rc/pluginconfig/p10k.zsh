@@ -1455,6 +1455,13 @@
   # really need it.
   typeset -g POWERLEVEL9K_DISABLE_HOT_RELOAD=true
 
+  # Apply machine-local overrides (not tracked in repo) before reloading.
+  # This is the correct place: after all repo defaults are set, before p10k reload.
+  # Changes here (including POWERLEVEL9K_MODE) take effect in the SAME session.
+  # Setup: cp ~/.config/zsh/p10k.local.zsh.template ~/.config/zsh/p10k.local.zsh
+  [[ -f ${ZDOTDIR:-$HOME/.config/zsh}/p10k.local.zsh ]] \
+    && source ${ZDOTDIR:-$HOME/.config/zsh}/p10k.local.zsh
+
   # If p10k is already loaded, reload configuration.
   # This works even with POWERLEVEL9K_DISABLE_HOT_RELOAD=true.
   (( ! $+functions[p10k] )) || p10k reload
