@@ -229,6 +229,23 @@ function main() {
 	if [[ "$is_link" = true ]]; then
 		source "$current_dir"/home-dir.sh
 		
+		# Auto-provision p10k.local.zsh from template if not yet created.
+		# The zsh config dir is a symlink into the repo, so this copy lands inside
+		# the repo directory (deliberately gitignored) and is immediately usable.
+		local zsh_config_dir="${XDG_CONFIG_HOME:-$HOME/.config}/zsh"
+		local p10k_local="$zsh_config_dir/p10k.local.zsh"
+		local p10k_template="$zsh_config_dir/p10k.local.zsh.template"
+		if [[ ! -f "$p10k_local" && -f "$p10k_template" ]]; then
+			if is_dry_run; then
+				print_notice "[dry-run] would copy p10k.local.zsh.template → p10k.local.zsh"
+			else
+				cp "$p10k_template" "$p10k_local"
+				print_success "Created ~/.config/zsh/p10k.local.zsh from template"
+			fi
+		elif [[ -f "$p10k_local" ]]; then
+			print_notice "p10k.local.zsh already exists — skipping template copy"
+		fi
+
 		# Fix permissions on zsh completion directories to satisfy compinit security checks
 		if [[ -d "$HOME/.config/zsh/completions.local" ]]; then
 			run_cmd chmod 700 "$HOME/.config/zsh" 2>/dev/null || true
@@ -257,6 +274,7 @@ function main() {
 		ensure_zsh_default_shell
 		source "$current_dir"/gh.sh
 		source "$current_dir"/ai-tools.sh
+		source "$current_dir"/fonts.sh
 		source "$current_dir"/helix.sh
 		install_helix || print_warning "Helix install failed; run scripts/helix.sh manually to retry"
 		source "$current_dir"/nvim.sh

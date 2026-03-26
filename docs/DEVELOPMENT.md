@@ -115,11 +115,14 @@ hx --version && nvim --version | head -1
 
 > `config/desktop/**` is not linked in WSL. Pass `--allow-desktop` only if needed.
 >
+> **Nerd Font (WSL):** `scripts/fonts.sh` detects WSL and skips the Linux install; it prints a PowerShell one-liner (`winget install --id DEVCOM.JetBrainsMonoNerdFont`) instead. Run that on the Windows side, then set your terminal font to `JetBrainsMono Nerd Font Mono`.
+>
 > **Corporate proxy (Zscaler):** `claude.ai` and `gh.io` may be blocked. If `copilot` or `claude` are missing after setup, install manually on a non-proxied connection:
 > ```bash
 > curl -fsSL https://gh.io/copilot-install | bash
 > curl -fsSL https://claude.ai/install.sh | bash
 > ```
+> The Nerd Font download also goes through GitHub Releases and may be blocked. Re-run `bash scripts/fonts.sh` once off proxy.
 
 ## Notes
 

@@ -56,9 +56,11 @@ To add a package: edit `scripts/basic-packages.sh` for all three distro branches
 | GitHub CLI | `gh` | Official pkg manager (apt/dnf/pacman/apk) |
 | GitHub Copilot CLI | `copilot` | Official installer (`curl -fsSL https://gh.io/copilot-install \| bash`) |
 | Claude Code | `claude` | Official installer (`curl -fsSL https://claude.ai/install.sh \| bash`) |
+| JetBrainsMono Nerd Font | — | GitHub releases (native Linux); WSL prints Windows install instructions |
 
 > First-run auth: `gh auth login`, `copilot /login`, `claude`.
 > `gh` installs to the system via the distro package manager. Neovim, Helix, Copilot CLI, and Claude Code install to `~/.local/bin` for non-root users.
+> The Nerd Font and `~/.config/zsh/p10k.local.zsh` are provisioned automatically — no manual copy needed.
 
 **Shell tools** (installed by [zinit](https://github.com/zdharma-continuum/zinit) on first zsh start):
 

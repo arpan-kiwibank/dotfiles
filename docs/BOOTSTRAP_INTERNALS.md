@@ -59,7 +59,29 @@ Install manually once off the corporate network:
 - **`ensure_zsh_default_shell`**: checks current shell before calling `chsh`.
 - **`neovim_nightly`**: GitHub API mtime check — skips download if binary is current.
 - **`install_helix`**: compares `hx --version` against latest GitHub release tag. Fail-open: re-installs if version cannot be parsed.
+- **`install_nerd_fonts`**: checks `fc-list` output for `JetBrainsMono.*Nerd` before downloading.
 - **`checkinstall` RHEL**: EPEL/CRB setup runs once per session, guarded by `_DOTFILES_CHECKINSTALL_RHEL_INIT`.
+- **p10k.local.zsh**: template copy is guarded by `[[ ! -f "$p10k_local" ]]` — never overwrites user edits.
+
+## Fonts (`fonts.sh`)
+
+`install_nerd_fonts()` installs JetBrainsMono Nerd Font:
+
+- **Native Linux**: downloads `JetBrainsMono.zip` from `github.com/ryanoasis/nerd-fonts` releases, unzips to `~/.local/share/fonts/JetBrainsMono/`, runs `fc-cache -f`. Non-fatal on network failure.
+- **WSL**: skips Linux install (Linux fonts are not used by Windows-based terminal renderers); prints a PowerShell `winget` one-liner and download URL instead.
+- **No `fc-cache`**: if `fontconfig` is absent, font files are installed and a manual run hint is printed.
+
+`unzip` is a prerequisite (in `basic-packages.sh`). If absent the step is skipped with a retry hint.
+
+## p10k.local.zsh provisioning (link phase)
+
+After the link phase creates `~/.config/zsh → <dotfiles>/config/core/zsh`, `initiate.sh` checks whether `~/.config/zsh/p10k.local.zsh` exists. If not, it copies the template:
+
+```bash
+cp ~/.config/zsh/p10k.local.zsh.template ~/.config/zsh/p10k.local.zsh
+```
+
+The copy lands inside the repo directory (the dir is a symlink, not a copy) and is gitignored. This means Nerd Font settings are active from the first `exec zsh` — no manual template copy needed. Existing files are never overwritten.
 
 ## Profile switching internals
 

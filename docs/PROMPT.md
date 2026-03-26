@@ -97,27 +97,22 @@ typeset -g POWERLEVEL9K_VCS_BRANCH_ICON=      # no branch icon in ascii mode
 
 **Step 1 — Install the font on the machine that renders the terminal**
 
-| Environment | Install location |
-|-------------|-----------------|
-| Linux native / VS Code terminal in WSL | `~/.local/share/fonts/` (Linux fontconfig) |
-| Windows Terminal (WSL) | Windows font system — install on the Windows side |
-| macOS Terminal / iTerm2 | `/Library/Fonts/` or `~/Library/Fonts/` |
+| Environment | How |
+|-------------|-----|
+| Linux native | **Automated** — `scripts/fonts.sh` runs at bootstrap and installs JetBrainsMono to `~/.local/share/fonts/` |
+| WSL (Windows Terminal / VS Code) | **Manual** — bootstrap prints instructions; install on the Windows side |
+| macOS | **Manual** — download from nerd-fonts releases |
 
-Linux install:
-```zsh
-mkdir -p ~/.local/share/fonts/JetBrainsMono
-cd /tmp
-curl -fsSL -o JetBrainsMono.zip \
-  "https://github.com/ryanoasis/nerd-fonts/releases/latest/download/JetBrainsMono.zip"
-unzip -qo JetBrainsMono.zip -d ~/.local/share/fonts/JetBrainsMono/
-fc-cache -f
-fc-list | grep -i "JetBrains.*Nerd"   # confirm registered
-```
-
-Windows (PowerShell, **not** WSL):
+WSL / Windows (PowerShell, **not** WSL):
 ```powershell
 winget install --id DEVCOM.JetBrainsMonoNerdFont
 # or download manually from https://github.com/ryanoasis/nerd-fonts/releases
+```
+
+Re-run Linux font install manually (idempotent):
+```bash
+bash scripts/fonts.sh
+fc-list | grep -i "JetBrains.*Nerd"   # confirm registered
 ```
 
 **Step 2 — Configure the terminal to use the font**
@@ -133,13 +128,18 @@ Windows Terminal — add to the WSL profile in `settings.json`:
 "font": { "face": "JetBrainsMono Nerd Font Mono" }
 ```
 
-**Step 3 — Create `~/.config/zsh/p10k.local.zsh`**
+**Step 3 — `~/.config/zsh/p10k.local.zsh` (automated at bootstrap)**
 
+`setup.sh` automatically copies the template to `~/.config/zsh/p10k.local.zsh` during
+the link phase if the file doesn't exist yet. On a fresh install you don't need to do
+anything — the file is already there with Nerd Font settings enabled.
+
+To re-create it manually:
 ```zsh
 cp ~/.config/zsh/p10k.local.zsh.template ~/.config/zsh/p10k.local.zsh
 ```
 
-Then uncomment / add the three nerdfont lines:
+The file already has the three nerdfont lines active (NerdFont is the template default):
 
 ```zsh
 typeset -g POWERLEVEL9K_MODE=nerdfont-complete
