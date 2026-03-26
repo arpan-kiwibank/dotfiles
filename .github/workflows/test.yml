@@ -6,6 +6,10 @@ on:
   pull_request:
     branches: ["**"]
 
+# Lock the GITHUB_TOKEN to the minimum required permissions.
+# The workflow only checks out code and runs test scripts — no write access needed.
+permissions: read-all
+
 jobs:
   # ── Mocked harness (fast, no Docker) ────────────────────────────────────────
   # Runs on every push and PR. All package managers, curl, tar, wget, and

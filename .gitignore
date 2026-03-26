@@ -3,3 +3,43 @@ config/core/zsh/.zcompdump*
 
 # Machine-local prompt overrides (copy from p10k.local.zsh.template)
 config/core/zsh/p10k.local.zsh
+
+# ── Sensitive files — never commit credentials or private keys ───────────────
+# SSH private keys
+id_rsa
+id_rsa*
+id_dsa
+id_dsa*
+id_ecdsa
+id_ecdsa*
+id_ed25519
+id_ed25519*
+*.pem
+*.key
+*.p12
+*.pfx
+
+# Environment / secrets files
+.env
+.env.*
+!.env.example
+*.secrets
+*.secret
+
+# netrc (stores plaintext credentials)
+.netrc
+_netrc
+
+# gh CLI auth tokens (written by `gh auth login`)
+config/core/gh/hosts.yml
+
+# Shell history
+*_history
+.zsh_history
+.bash_history
+
+# GPG keyrings accidentally dropped here
+*.gpg
+*.asc
+*.sig
+
