@@ -63,6 +63,7 @@ zinit wait'0a' lucid \
 
 PROMPT="%~"$'\n'"> "
 zinit wait'!0b' lucid depth=1 \
+	atinit"source $ZHOMEDIR/rc/pluginconfig/powerlevel10k_atinit.zsh" \
 	atload"source $ZHOMEDIR/rc/pluginconfig/powerlevel10k_atload.zsh" \
 	light-mode for @romkatv/powerlevel10k
 

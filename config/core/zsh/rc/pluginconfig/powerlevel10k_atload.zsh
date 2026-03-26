@@ -3,9 +3,8 @@ if [[ -f $ZRCDIR/pluginconfig/p10k.zsh ]]; then
 fi
 # Machine-local overrides: copy p10k.local.zsh.template to ~/.config/zsh/p10k.local.zsh
 # to adjust segments, colors, or fonts without touching the repo file.
-if [[ -f ${ZDOTDIR:-$HOME/.config/zsh}/p10k.local.zsh ]]; then
-  source ${ZDOTDIR:-$HOME/.config/zsh}/p10k.local.zsh
-  # Re-initialize p10k so POWERLEVEL9K_MODE and other overrides take effect.
-  # p10k reload works even with POWERLEVEL9K_DISABLE_HOT_RELOAD=true.
-  (( $+functions[p10k] )) && p10k reload
-fi
+# NOTE: POWERLEVEL9K_MODE is pre-seeded in powerlevel10k_atinit.zsh (runs before the plugin
+# loads), so the correct icon set is active from the first prompt. Changes to MODE here
+# have no effect — edit p10k.local.zsh and open a new terminal to change the icon mode.
+[[ -f ${ZDOTDIR:-$HOME/.config/zsh}/p10k.local.zsh ]] \
+  && source ${ZDOTDIR:-$HOME/.config/zsh}/p10k.local.zsh
