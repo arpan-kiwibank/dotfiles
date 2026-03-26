@@ -343,8 +343,6 @@ if [ "$ZSHRC_BENCH" != "true" ]; then
 	zinit wait'1' lucid \
 		pick"*.sh" \
 		light-mode for "$ZHOMEDIR/rc/myplugins/vte/"
-	# zinit wait'2' lucid \
-		#   light-mode for "$ZHOMEDIR/rc/myplugins/coc-project.zsh/"
 fi
 
 
