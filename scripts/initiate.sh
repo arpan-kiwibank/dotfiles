@@ -171,7 +171,7 @@ function main() {
 	export DOTFILES_PROFILE="$profile"
 	print_notice "Profile: $DOTFILES_PROFILE"
 
-	# WSL2 does not provide DRM/GPU access — Hyprland and Sway require bare-metal hardware.
+	# WSL2 does not provide DRM/GPU access — Hyprland requires bare-metal hardware.
 	# Skip config/desktop/** linking unless --allow-desktop is explicitly passed.
 	if is_wsl; then
 		if [[ "$allow_desktop" == "true" ]]; then

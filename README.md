@@ -80,7 +80,7 @@ Switch at any time — cleanup is automatic:
 | `home/` | files linked into `$HOME` |
 | `local-bin/` | scripts linked into `~/.local/bin` |
 | `config/core/` | shell, editor, terminal, git |
-| `config/desktop/` | Hyprland, Sway, Waybar, Dunst |
+| `config/desktop/` | Hyprland, Waybar, Dunst |
 | `config/optional/` | repo-kept, not linked by default |
 | `profiles/` | manifests controlling what gets linked |
 | `scripts/` | bootstrap and maintenance scripts |

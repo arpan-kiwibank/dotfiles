@@ -34,9 +34,6 @@ config/desktop/hypr/Kvantum
 config/desktop/hypr/environment.d
 config/desktop/hypr/systemd
 
-# alternate desktop
-config/desktop/sway/sway
-
 # language managers
 config/lang/mise
 

@@ -1,5 +1,5 @@
 ---
-description: "Use when: changing Hyprland, Sway, Waybar, Dunst, portal integration, desktop keybindings, launch commands, environment.d, or other desktop-session behavior in this dotfiles repo."
+description: "Use when: changing Hyprland, Waybar, Dunst, portal integration, desktop keybindings, launch commands, environment.d, or other desktop-session behavior in this dotfiles repo."
 ---
 
 The task is:
@@ -8,7 +8,7 @@ ${input:Describe the desktop change or issue}
 
 Work inside the dotfiles repository with a desktop-first scope.
 
-- Start in the smallest relevant subtree under `config/desktop/`, such as Hyprland or Sway, instead of loading the whole desktop stack.
+- Start in the smallest relevant subtree under `config/desktop/` instead of loading the whole desktop stack.
 - Keep the change desktop-scoped unless it clearly alters shared shell or bootstrap behavior.
 - If launch commands or terminal integration are involved, inspect shell or bootstrap files only when the dependency is real.
 - Preserve the existing desktop layout and avoid moving config across desktop domains.
