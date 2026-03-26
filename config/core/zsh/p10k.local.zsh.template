@@ -18,6 +18,8 @@
 #
 #   typeset -g POWERLEVEL9K_MODE=nerdfont-complete
 #   typeset -g POWERLEVEL9K_ICON_PADDING=moderate
+#   # Branch icon for the custom git formatter (\uE0A0 = Nerd Font branch glyph)
+#   typeset -g POWERLEVEL9K_VCS_BRANCH_ICON=$'\uE0A0 '
 
 # ─── Instant prompt ────────────────────────────────────────────────────────────
 # Renders the prompt before .zshrc finishes loading (no flash of unstyled shell).

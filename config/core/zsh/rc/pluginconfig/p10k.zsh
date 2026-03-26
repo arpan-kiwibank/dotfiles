@@ -273,10 +273,9 @@
   typeset -g POWERLEVEL9K_DIR_CLASSES=()
 
   #####################################[ vcs: git status ]######################################
-  # Branch icon. Left unset so the mode's default icon applies:
-  #   ascii mode       → no icon (clean text display)
-  #   nerdfont-complete → nerd font branch glyph
-  # Uncomment to override: typeset -g POWERLEVEL9K_VCS_BRANCH_ICON=$'\uF126 '
+  # Branch icon used by the custom my_git_formatter below.
+  # Empty in ascii mode (no icon). Override in p10k.local.zsh for nerdfont.
+  typeset -g POWERLEVEL9K_VCS_BRANCH_ICON=
 
   # Untracked files icon. It's really a question mark, your font isn't broken.
   # Change the value of this parameter to show a different icon.
