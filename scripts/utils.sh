@@ -12,19 +12,16 @@ function is_dry_run() {
 }
 
 function is_wsl() {
-	# WSL_DISTRO_NAME is set by the WSL launcher for every real WSL session.
-	# Docker containers running on a WSL2 host share the same /proc/version kernel
-	# string ("microsoft") but do NOT have WSL_DISTRO_NAME injected — so this is
-	# the cleanest way to distinguish WSL from Docker-on-WSL.
-	#
-	# Fallback for unusual setups where WSL_DISTRO_NAME may not be exported:
-	# accept either WSLInterop or WSLInterop-late.  Ubuntu 24.04+ with systemd
-	# enabled creates WSLInterop-late (not WSLInterop) via systemd-binfmt, which
-	# broke the original check.  See: https://github.com/microsoft/WSL/issues/13449
-	[[ -n "${WSL_DISTRO_NAME:-}" ]] || {
-		grep -qi microsoft /proc/version 2>/dev/null &&
-			{ [[ -e /proc/sys/fs/binfmt_misc/WSLInterop ]] || [[ -e /proc/sys/fs/binfmt_misc/WSLInterop-late ]]; }
-	}
+	# Use env vars set by the WSL launcher — immune to filesystem layout changes.
+	# WSL_DISTRO_NAME: set for every real WSL session since WSL1.
+	# WSL_INTEROP:     the Unix socket path; secondary fallback for minimal distros.
+	# Neither is present in Docker containers running on a WSL2 host, which share
+	# the same /proc/version kernel string — making env-var detection the only
+	# reliable way to distinguish WSL from Docker-on-WSL.
+	# Avoid /proc/sys/fs/binfmt_misc/WSLInterop* — Ubuntu 24.04 systemd creates
+	# WSLInterop-late instead of WSLInterop, and the name may change again.
+	# See: https://github.com/microsoft/WSL/issues/13449
+	[[ -n "${WSL_DISTRO_NAME:-}" ]] || [[ -n "${WSL_INTEROP:-}" ]]
 }
 
 function run_cmd() {
