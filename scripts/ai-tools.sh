@@ -12,8 +12,8 @@ source "$current_dir"/utils.sh
 
 function install_gh_copilot() {
     if ! command -v gh >/dev/null 2>&1; then
-        print_warning "gh CLI not found — skipping GitHub Copilot CLI (gh is installed by zinit on first zsh start)"
-        print_notice "  Re-run './setup.sh update' after opening a zsh session to complete Copilot CLI install"
+        print_warning "gh CLI not found — skipping GitHub Copilot CLI"
+        print_notice "  gh should have been installed by scripts/gh.sh — re-run: ./setup.sh update"
         return 0
     fi
 

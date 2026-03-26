@@ -290,10 +290,11 @@ zinit wait'1' lucid \
 	from"gh-r" as"program" pick"ghg*/ghg" \
 	light-mode for @Songmu/ghg
 
-zinit wait'1' lucid \
-	from"gh-r" as'program' bpick'*linux_*.tar.gz' pick'gh*/**/gh' \
-	atload"source $ZHOMEDIR/rc/pluginconfig/gh_atload.zsh" \
-	light-mode for @cli/cli
+# gh CLI is now installed at bootstrap via scripts/gh.sh (official pkg manager method).
+# The atload hook still runs to generate shell completions on first zsh start.
+if command -v gh >/dev/null 2>&1; then
+	source $ZHOMEDIR/rc/pluginconfig/gh_atload.zsh
+fi
 
 
 
