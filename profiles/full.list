@@ -51,7 +51,6 @@ config/optional/gdb
 config/optional/efm-langserver
 config/optional/prs
 config/optional/cspell
-config/optional/i3status-rust
 
 # misc
 config/misc/chrome-flags.conf

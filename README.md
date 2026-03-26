@@ -70,7 +70,6 @@ Switch at any time — cleanup is automatic:
 | gdb | GDB init config |
 | ideavim | JetBrains IdeaVim config |
 | prs | Password manager CLI config |
-| i3status-rust | Status bar for Sway |
 
 > **WSL**: `config/desktop/**` is skipped automatically in WSL2. Pass `--allow-desktop` to override.
 
