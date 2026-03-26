@@ -71,75 +71,15 @@ zinit wait'1' lucid \
     light-mode for @<org>/<repo>
 ```
 
-**Verifying the guard works after adding:**
-
-```bash
-# Confirm the block is inside the if-block, not outside it:
-grep -n 'DOTFILES_ACTIVE_PROFILE\|fi$\|@<org>/<repo>' config/core/zsh/rc/pluginlist.zsh
-
-# Simulate a minimal switch — the plugin dir should not be created:
-DOTFILES_ACTIVE_PROFILE=minimal zsh -c 'source config/core/zsh/rc/pluginlist.zsh' 2>&1 | grep -i '<name>' || echo 'OK: not loaded'
-
-# Run the full harness (profile-switch test asserts zinit dirs are cleaned):
-./scripts/test-update-harness.sh
-```
+**Verifying the guard works:** run `./scripts/test-update-harness.sh` — the profile-switch test asserts zinit dirs for removed entries are cleaned.
 
 ## Adding a core zinit plugin
 
-Core plugins are always loaded regardless of profile. They live in the main body of `pluginlist.zsh` above the `if [[ "$DOTFILES_ACTIVE_PROFILE" == "full" ]]` block, grouped under the nearest relevant `#----------` section comment.
-
-**Template — gh-r binary (archive, nested path):**
-
-```zsh
-zinit wait'1' lucid \
-    from"gh-r" as"program" pick"<dir-prefix>*/<binary-name>" \
-    atload"source $ZHOMEDIR/rc/pluginconfig/<name>_atload.zsh" \
-    light-mode for @<org>/<repo>
-```
-
-**Template — zsh plugin with config file:**
-
-```zsh
-zinit wait'1' lucid \
-    atinit"source $ZHOMEDIR/rc/pluginconfig/<name>_atinit.zsh" \
-    atload"source $ZHOMEDIR/rc/pluginconfig/<name>_atload.zsh" \
-    light-mode for @<org>/<repo>
-```
-
-Rules:
-- Use `wait'1'` unless the plugin must be available before other `wait'1'` plugins (e.g. completion init uses `wait'0b'`, prompt uses `wait'0a'`).
-- Always include `lucid` to suppress the download banner.
-- Do **not** add core plugins inside the `if full` block — they must load on `minimal` too.
-- After adding, run `zsh -c 'zprof' 2>&1 | head -20` to check it doesn't bloat startup.
+Core plugins live in the main body of `pluginlist.zsh` above the `if full` block, under the nearest `#------` section comment. Use the same templates as above but **outside** the guard. Use `wait'1'` by default (`wait'0a'`/`wait'0b'`/`wait'0c'` are reserved for prompt/completion/syntax-highlighting). Always include `lucid`.
 
 ## Adding a system package
 
-System packages go in `scripts/basic-packages.sh`. The file branches on `whichdistro()` which returns `debian`, `redhat`, or `arch`.
-
-```bash
-# Debian/Ubuntu: add to the debian checkinstall line
-checkinstall zsh git tmux ... <new-pkg-debian-name>
-
-# Fedora/RHEL: add to the redhat checkinstall line
-checkinstall zsh git tmux ... <new-pkg-rhel-name>
-
-# Arch: add to the else (arch) checkinstall line
-checkinstall zsh git tmux ... <new-pkg-arch-name>
-```
-
-Package names differ across distros — always check all three branches. Common differences:
-
-| Package | debian | redhat | arch |
-|---------|--------|--------|------|
-| sqlite | `sqlite3` | `sqlite` + `sqlite-devel` | `sqlite` |
-| pip | `python3-pip` | `python3-pip` | `python-pip` |
-
-After editing, run the harness to confirm correct dispatch across distros:
-
-```bash
-./scripts/test-update-harness.sh          # verifies mocked apt-get/yum/pacman calls
-./scripts/test-update-harness.sh --docker # verifies on each real distro image
-```
+Add to `scripts/basic-packages.sh`, updating all three distro branches (`debian`/`redhat`/`arch`). Use `checkinstall <pkg>` — never call package managers directly. Package names differ (e.g. `sqlite3` on Debian, `sqlite` on RHEL/Arch). Run the harness after editing.
 
 ## WSL rebuild checklist
 

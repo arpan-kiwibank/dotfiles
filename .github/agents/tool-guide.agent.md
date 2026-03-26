@@ -146,20 +146,5 @@ Never scan unrelated files. Limit reads to the pluginconfig file for that tool a
 
 | Script | Command | What it does |
 |--------|---------|--------------|
-| **alarm** | `alarm` | Countdown alarm. Usage: `alarm 30m`, `alarm 10:30`, `alarm 2h "message"`. Fires a Windows toast in WSL (via PowerShell), `notify-send` on bare metal, or terminal bell as fallback. `hyprland-wrap.sh` is skipped in WSL. |
-| **hyprland-wrap.sh** | `hyprland-wrap.sh` | Hyprland launcher wrapper — sources `environment.d` via the systemd generator then `exec Hyprland`. Bare metal only. |
-
----
-
-## How To Use This Agent
-
-Ask in plain language:
-
-- `How do I use zoxide?`
-- `What keybindings does fzf add?`
-- `Show me pet usage examples`
-- `What does delta do and how is it configured here?`
-- `List all git-related tools`
-- `How do I add a new abbreviation with zsh-abbrev-alias?`
-
-The agent will pull the pluginconfig file, show dotfiles-specific setup, and fetch live tldr examples where available.
+| **alarm** | `alarm` | Countdown alarm. Usage: `alarm 30m`, `alarm 10:30`, `alarm 2h "message"`. Fires a Windows toast in WSL (via PowerShell), `notify-send` on bare metal, or terminal bell as fallback. |
+| **hyprland-wrap.sh** | `hyprland-wrap.sh` | Hyprland launcher wrapper — sources `environment.d` via the systemd generator then `exec Hyprland`. Bare metal + full profile only. |

@@ -17,30 +17,11 @@ description: "Use when: changing zsh startup, zinit plugins, shell functions, co
 
 ## Zinit patterns
 
-Standard templates used in `pluginlist.zsh`:
-
-```zsh
-# gh-r raw binary (no archive) — chmod is required; tar does not run
-zinit wait'1' lucid \
-    from"gh-r" as"program" pick"<binary>" \
-    atclone'chmod +x <binary>' atpull'chmod +x <binary>' \
-    light-mode for @<org>/<repo>
-
-# gh-r archive with nested binary — tar preserves execute bit; no chmod needed
-zinit wait'1' lucid \
-    from"gh-r" as"program" pick"<dir-prefix>*/<binary>" \
-    light-mode for @<org>/<repo>
-
-# zsh plugin with per-plugin config files
-zinit wait'1' lucid \
-    atinit"source $ZHOMEDIR/rc/pluginconfig/<name>_atinit.zsh" \
-    atload"source $ZHOMEDIR/rc/pluginconfig/<name>_atload.zsh" \
-    light-mode for @<org>/<repo>
-```
-
+- For `gh-r` raw binaries: add `atclone'chmod +x <name>' atpull'chmod +x <name>'`. Archive-based entries (with `pick"dir/binary"`) don't need this — tar preserves the execute bit.
 - Always use `lucid` to suppress the download banner.
-- Use `wait'1'` by default. `wait'0a'`/`wait'0b'`/`wait'0c'` are reserved for prompt, completion, and syntax-highlighting setup — do not promote a new plugin into `wait'0'` unless it must be present before those.
-- Core plugins (loaded for all profiles) go in the main body above the `if full` block, under the relevant section comment.
+- Use `wait'1'` by default. `wait'0a'`/`wait'0b'`/`wait'0c'` are reserved for prompt, completion, and syntax-highlighting — do not promote a new plugin into `wait'0'`.
+- Core plugins go above the `if full` block; optional-tool plugins go inside it.
+- See `docs/DEVELOPMENT.md` for full zinit block templates.
 
 ## Optional-tool zinit plugins
 
