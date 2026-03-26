@@ -25,7 +25,7 @@ description: "Use when: changing zsh startup, zinit plugins, shell functions, co
 
 ## Optional-tool zinit plugins
 
-`DOTFILES_ACTIVE_PROFILE` is loaded at the top of `pluginlist.zsh` from `${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/active-profile`, defaulting to `full` on first run.
+`DOTFILES_ACTIVE_PROFILE` is loaded at the top of `pluginlist.zsh` from `${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/active-profile`, defaulting to `minimal` on first run.
 
 All optional-tool zinit blocks must live inside:
 

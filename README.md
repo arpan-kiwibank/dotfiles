@@ -7,22 +7,22 @@ Bootstrap a Linux workspace in one command on Debian/Ubuntu, Fedora/RHEL, or Arc
 ```bash
 git clone https://github.com/arpan-kiwibank/dotfiles
 cd dotfiles
-./setup.sh                    # full profile (default)
-./setup.sh --profile minimal  # core only, no desktop or optional tools
+./setup.sh                    # minimal profile (default)
+./setup.sh --profile full     # core + desktop + optional tools + misc
 ```
 
 ## Profiles
 
 | Profile | What's linked |
 |---------|---------------|
+| `minimal` | core + misc **(default)** |
 | `full` | core + desktop + optional tools + misc |
-| `minimal` | core + misc |
 
 Switch at any time — cleanup is automatic:
 
 ```bash
-./setup.sh --profile minimal   # switch from full
-./setup.sh --profile full      # switch back
+./setup.sh --profile full      # switch to full
+./setup.sh --profile minimal   # switch back
 ```
 
 ### Custom profiles

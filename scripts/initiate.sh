@@ -11,7 +11,7 @@ function helpmsg() {
 	print_default "  install: add require package install and symbolic link to $HOME from dotfiles [default]"
 	print_default "  update: add require package install or update."
 	print_default "  link: only symbolic link to $HOME from dotfiles."
-	print_default "  --profile: profile name (default: full). Any profiles/*.list file works."
+	print_default "  --profile: profile name (default: minimal). Any profiles/*.list file works."
 	print_default "            Built-in: full, minimal. Custom: copy profiles/TEMPLATE.list."
 	print_default "  --dry-run: print planned changes without modifying the system."
 	print_default "  --allow-desktop: in WSL, link config/desktop/** entries anyway (default: skipped in WSL)."
@@ -108,7 +108,7 @@ function main() {
 	local is_update="false"
 	local action=""
 	local dry_run="${DOTFILES_DRY_RUN:-false}"
-	local profile="${DOTFILES_PROFILE:-full}"
+	local profile="${DOTFILES_PROFILE:-minimal}"
 	local allow_desktop="false"
 
 	while [ $# -gt 0 ]; do

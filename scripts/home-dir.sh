@@ -424,7 +424,7 @@ function link_to_homedir() {
 		done <"$dotfiles_dir/.linkignore"
 	fi
 
-	local profile="${DOTFILES_PROFILE:-full}"
+	local profile="${DOTFILES_PROFILE:-minimal}"
 	local -a manifest_entries=()
 	load_profile_entries "$dotfiles_dir" "$profile" manifest_entries
 	print_notice "Using profile manifest: $profile"

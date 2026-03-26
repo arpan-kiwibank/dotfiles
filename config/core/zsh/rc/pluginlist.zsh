@@ -19,9 +19,9 @@ autoload -Uz _zinit
 (( ${+_comps} )) && _comps[zinit]=_zinit
 
 # Read the active dotfiles profile from the bootstrap state file.
-# Defaults to 'full' so a first shell session (before bootstrap) loads everything.
+# Defaults to 'minimal' so a first shell session (before bootstrap) stays lightweight.
 typeset -g DOTFILES_ACTIVE_PROFILE
-DOTFILES_ACTIVE_PROFILE="${$(command cat "${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/active-profile" 2>/dev/null):-full}"
+DOTFILES_ACTIVE_PROFILE="${$(command cat "${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/active-profile" 2>/dev/null):-minimal}"
 
 
 #==============================================================#
