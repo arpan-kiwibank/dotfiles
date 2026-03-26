@@ -81,6 +81,18 @@ Core plugins live in the main body of `pluginlist.zsh` above the `if full` block
 
 Add to `scripts/basic-packages.sh`, updating all three distro branches (`debian`/`redhat`/`arch`). Use `checkinstall <pkg>` — never call package managers directly. Package names differ (e.g. `sqlite3` on Debian, `sqlite` on RHEL/Arch). Run the harness after editing.
 
+## Adding a bootstrap tool (standalone script)
+
+Bootstrap tools are installers that live in `scripts/` and are sourced from the `update` phase of `scripts/initiate.sh`. The existing examples are `gh.sh`, `helix.sh`, `nvim.sh`, and `ai-tools.sh`.
+
+1. Create `scripts/<name>.sh` with `set -euo pipefail`, `source utils.sh`, and an idempotent install function.
+2. Check if already installed using the **exact binary path** (e.g. `$HOME/.local/bin/<name>`), not `command -v`, to avoid false positives from shadowed names (see `ai-tools.sh` for the pattern).
+3. Make network failures **non-fatal**: capture curl exit codes with `|| exit_code=$?` and print a manual-install hint on failure. Never let curl errors propagate through `set -e` into the parent bootstrap.
+4. Add `source "$current_dir"/<name>.sh` and the function call in `initiate.sh`'s `is_update` block, after `basic-packages.sh` and before `nvim.sh`.
+5. Add a dry-run guard: `if is_dry_run; then print_notice "[dry-run] ..."; return 0; fi`.
+6. Add the tool to the `README.md` bootstrap tools table.
+7. Run `bash scripts/test-update-harness.sh` — harness passes as-is since the curl mock covers network calls; add a specific `assert_file_contains` only if you want to verify the new curl URL was invoked.
+
 ## WSL rebuild checklist
 
 **Before wipe:** `git status && git log -1` — push all changes. Note your profile.
@@ -92,12 +104,22 @@ sudo apt-get install -y git curl wget
 git clone https://github.com/arpan-kiwibank/dotfiles && cd dotfiles
 ./setup.sh --profile full
 exec zsh
+# Authenticate tools that require first-run login:
+gh auth login
+copilot /login           # GitHub Copilot CLI (only if installed — may be blocked by corporate proxy)
+# claude                 # Claude Code (only if installed — may be blocked by corporate proxy)
 tldr --update
 nvim --headless -c 'Lazy! sync' -c 'qall'
 hx --version && nvim --version | head -1
 ```
 
 > `config/desktop/**` is not linked in WSL. Pass `--allow-desktop` only if needed.
+>
+> **Corporate proxy (Zscaler):** `claude.ai` and `gh.io` may be blocked. If `copilot` or `claude` are missing after setup, install manually on a non-proxied connection:
+> ```bash
+> curl -fsSL https://gh.io/copilot-install | bash
+> curl -fsSL https://claude.ai/install.sh | bash
+> ```
 
 ## Notes
 

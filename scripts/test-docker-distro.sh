@@ -102,6 +102,23 @@ exit 0
 CHSHSTUB
 chmod +x "$stubbin/chsh"
 
+# wget: used by gh.sh Debian branch to fetch the GitHub CLI GPG keyring.
+# Writes empty file to -O destination so subsequent cp succeeds.
+cat > "$stubbin/wget" <<WGETSTUB
+#!/usr/bin/env bash
+printf 'wget %s\n' "\$*" >> '$log'
+i=1; while [[ \$i -le \$# ]]; do
+    if [[ "\${!i}" == -O* ]]; then
+        dest="\${!i#-O}"
+        [[ -z "\$dest" ]] && { i=\$((i+1)); dest="\${!i}"; }
+        [[ -n "\$dest" ]] && : > "\$dest"
+    fi
+    i=\$((i+1))
+done
+exit 0
+WGETSTUB
+chmod +x "$stubbin/wget"
+
 # sudo: pass through so package-manager stubs in PATH remain reachable.
 # Running as root in Docker so ensure_sudo() already returns 0, but
 # checkinstall still emits run_cmd sudo <pkg-mgr> commands.

@@ -129,6 +129,23 @@ function run_profile() {
 	create_mock_command pacman "$mock_dir" "$tmp_root"
         create_mock_command chsh "$mock_dir" "$tmp_root"
 
+	# wget mock: used by gh.sh Debian branch to fetch the GitHub CLI GPG keyring.
+	# Writes an empty file to the -O destination so subsequent cp succeeds.
+	cat > "$mock_dir/wget" <<WGETMOCK
+#!/usr/bin/env bash
+printf 'wget %s\n' "\$*" >> '$tmp_root/commands.log'
+i=1; while [[ \$i -le \$# ]]; do
+    if [[ "\${!i}" == -O* ]]; then
+        dest="\${!i#-O}"
+        [[ -z "\$dest" ]] && { i=\$((i+1)); dest="\${!i}"; }
+        [[ -n "\$dest" ]] && : > "\$dest"
+    fi
+    i=\$((i+1))
+done
+exit 0
+WGETMOCK
+	chmod +x "$mock_dir/wget"
+
         # curl mock: write empty file for download calls (-o), return minimal
         # fake JSON for GitHub API calls (stdout, no -o) so version checks
         # get a parseable response.  Both nvim and Helix version checks are
@@ -321,6 +338,20 @@ function run_profile_switch_test() {
 	create_mock_command dnf "$mock_dir" "$tmp_root"
 	create_mock_command pacman "$mock_dir" "$tmp_root"
 	create_mock_command chsh "$mock_dir" "$tmp_root"
+	cat > "$mock_dir/wget" <<WGETMOCK
+#!/usr/bin/env bash
+printf 'wget %s\n' "\$*" >> '$tmp_root/commands.log'
+i=1; while [[ \$i -le \$# ]]; do
+    if [[ "\${!i}" == -O* ]]; then
+        dest="\${!i#-O}"
+        [[ -z "\$dest" ]] && { i=\$((i+1)); dest="\${!i}"; }
+        [[ -n "\$dest" ]] && : > "\$dest"
+    fi
+    i=\$((i+1))
+done
+exit 0
+WGETMOCK
+	chmod +x "$mock_dir/wget"
 	cat > "$mock_dir/curl" <<'CURLMOCK'
 #!/usr/bin/env bash
 printf 'curl %s\n' "$*" >> "${MOCK_LOG}"

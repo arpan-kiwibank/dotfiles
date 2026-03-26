@@ -43,8 +43,9 @@ Any `profiles/*.list` file is a valid profile. The harness can test them too:
 
 ## What you get
 
-**System packages** (via distro package manager):
+**System packages** (installed via `scripts/basic-packages.sh` using the distro package manager):
 `zsh`, `git`, `tmux`, `curl`, `wget`, `jq`, `sqlite`, `python3-pip`, and more.
+To add a package: edit `scripts/basic-packages.sh` for all three distro branches (`debian`/`redhat`/`arch`) using `checkinstall <pkg>` — see [docs/DEVELOPMENT.md](docs/DEVELOPMENT.md).
 
 **Bootstrap tools** (installed at bootstrap alongside system packages):
 

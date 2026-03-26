@@ -27,6 +27,31 @@ neovim_nightly || print_warning "..."
 
 Both are non-fatal (`|| print_warning`) — network failures warn and continue.
 
+## GitHub CLI (`gh.sh`)
+
+`install_gh()` uses the **official package-manager method** per distro (no zinit):
+- `debian`: adds `cli.github.com` apt keyring via `wget` + sets apt source, then `apt-get install gh`
+- `redhat`: detects `dnf5` / `dnf4` / `yum`, adds the repo, installs `gh`
+- `arch`: `pacman -S github-cli`
+- `alpine`: `apk add github-cli` (despite alpine being unsupported overall — `checkinstall` would abort first, but `install_gh` may be reached before that; the `gh.sh` branch is safe)
+- other: prints a manual URL and returns successfully (non-fatal)
+
+Idempotency guard: `command -v gh`, which is reliable since `gh` is always installed to a system path (not shadowed by VS Code or other tools).
+
+## AI tools (`ai-tools.sh`)
+
+`install_gh_copilot()` and `install_claude_code()` use curl pipe-to-bash installers.
+
+**Idempotency**: checks the **exact install path** (`~/.local/bin/copilot`, `~/.local/bin/claude` for non-root; `/usr/local/bin/` for root) rather than `command -v`, because other tools (e.g. the VS Code Copilot Chat CLI shim) shadow these names on PATH and hang on `--version`.
+
+**Non-fatal network failures**: curl exit codes are captured with `|| exit_code=$?`. On any non-zero exit (corporate proxy 403, offline, etc.), a warning is printed with manual install instructions and bootstrap continues.
+
+**Known proxy issue**: Zscaler and similar corporate proxies block `claude.ai` with a 403. The Copilot CLI installer at `gh.io` may also be blocked. Both skip gracefully and print:
+```
+Install manually once off the corporate network:
+  curl -fsSL https://claude.ai/install.sh | bash
+```
+
 ## Idempotency
 
 - **Linker**: `symlink_points_to()` skips already-correct entries. Pre-scan fast path ("All N entries already linked") returns early without creating a backup dir.
