@@ -1,0 +1,70 @@
+# p10k.local.zsh — Machine-local Powerlevel10k overrides
+#
+# This file is NOT tracked in the dotfiles repo.
+# It is sourced AFTER p10k.zsh, so any variable you set here wins over the default.
+#
+# Setup:
+#   cp ~/.config/zsh/p10k.local.zsh.template ~/.config/zsh/p10k.local.zsh
+#   # edit to taste, then reload:
+#   source ~/.config/zsh/p10k.local.zsh
+#
+# Full reference: https://github.com/romkatv/powerlevel10k/blob/master/README.md
+# Browse all POWERLEVEL9K_* vars: grep 'typeset -g POWERLEVEL9K_' ~/.config/zsh/rc/pluginconfig/p10k.zsh
+
+# ─── Font / icon mode ──────────────────────────────────────────────────────────
+# 'nerdfont-complete' requires a Nerd Font (default in p10k.zsh).
+# 'ascii' works everywhere — no special font needed.
+#
+#   typeset -g POWERLEVEL9K_MODE=ascii
+
+# ─── Instant prompt ────────────────────────────────────────────────────────────
+# Renders the prompt before .zshrc finishes loading (no flash of unstyled shell).
+# Requires that p10k is sourced BEFORE any output-generating code in .zshrc.
+# See: https://github.com/romkatv/powerlevel10k#instant-prompt
+#
+#   typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet   # or 'verbose'
+
+# ─── Transient prompt ──────────────────────────────────────────────────────────
+# The default collapses accepted-command prompts in the same directory.
+# 'always' collapses every accepted command. 'off' keeps full prompts.
+#
+#   typeset -g POWERLEVEL9K_TRANSIENT_PROMPT=always   # stricter collapse
+#   typeset -g POWERLEVEL9K_TRANSIENT_PROMPT=off       # disable
+
+# ─── Add segments to left prompt ──────────────────────────────────────────────
+# Prepend an OS icon to the left prompt:
+#
+#   POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(os_icon "${POWERLEVEL9K_LEFT_PROMPT_ELEMENTS[@]}")
+
+# ─── Add time to right prompt ─────────────────────────────────────────────────
+# Append the current time as the last right-prompt segment:
+#
+#   POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS+=(time)
+#   typeset -g POWERLEVEL9K_TIME_FORMAT='%D{%H:%M}'
+#   typeset -g POWERLEVEL9K_TIME_FOREGROUND=6
+
+# ─── Always show user@host ─────────────────────────────────────────────────────
+# By default 'context' only appears in SSH sessions or when running as root.
+# Remove the suppression to show it always:
+#
+#   unset 'POWERLEVEL9K_CONTEXT_{DEFAULT,SUDO}_{CONTENT,VISUAL_IDENTIFIER}_EXPANSION'
+
+# ─── Command execution time threshold ─────────────────────────────────────────
+# Report slow commands after this many seconds (default: 3).
+#
+#   typeset -g POWERLEVEL9K_COMMAND_EXECUTION_TIME_THRESHOLD=5
+
+# ─── Directory display ────────────────────────────────────────────────────────
+# Show the full path without truncation:
+#
+#   typeset -g POWERLEVEL9K_SHORTEN_STRATEGY=
+#   typeset -g POWERLEVEL9K_DIR_MAX_LENGTH=0
+
+# ─── Custom segment ───────────────────────────────────────────────────────────
+# Define a function and add it to the element list to create your own segment.
+# See: https://github.com/romkatv/powerlevel10k/blob/master/README.md#writing-your-own-segment
+#
+#   function prompt_my_seg() {
+#     p10k segment -f 3 -t 'hello, %n'
+#   }
+#   POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS+=(my_seg)

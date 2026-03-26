@@ -1,5 +1,13 @@
 #==============================================================#
 ##          Prompt Configuration                              ##
+##                                                            ##
+## FALLBACK PROMPT — active until zinit deferred-loads p10k.  ##
+## Powerlevel10k (via pluginlist.zsh) overrides PROMPT        ##
+## automatically after its wait'!0b' slot fires.              ##
+##                                                            ##
+## To customize: copy p10k.local.zsh.template →              ##
+##   ~/.config/zsh/p10k.local.zsh                            ##
+## Full prompt config: rc/pluginconfig/p10k.zsh              ##
 #==============================================================#
 
 ###     git      ###
@@ -59,7 +67,8 @@ function __show_status() {
 #pct=$'%0(?||%147(?||%F{red}))%#%f'
 
 
-# Left prompt
+# Left prompt — this is the fallback visible briefly before p10k loads.
+# Powerlevel10k (loaded asynchronously by zinit) overrides PROMPT automatically.
 PROMPT='[%n@%m:%.$(rprompt-git-current-branch)]${WINDOW:+"[$WINDOW]"}$(__show_status)%# '
 ## <escape sequence>.
 ## If prompt_bang is enabled, then != current history event number, !! ='!' (literal)

@@ -42,3 +42,28 @@ To add a new optional-tool plugin: (1) add config to `config/optional/<name>/`, 
 ## System packages
 
 System packages go in `scripts/basic-packages.sh`, which branches on `whichdistro()` (`debian` / `redhat` / `arch`). Always update all three branches — package names differ (e.g. `sqlite3` on Debian, `sqlite` on RHEL/Arch). Use `checkinstall <pkg>` — never call `apt-get`/`yum`/`pacman` directly.
+
+## Prompt system
+
+The prompt is powered by **Powerlevel10k** loaded via zinit in `pluginlist.zsh`.
+
+| File | Role |
+|------|------|
+| `rc/pluginconfig/p10k.zsh` | Default prompt config — tracked in repo, edit this directly |
+| `rc/pluginconfig/powerlevel10k_atload.zsh` | Wires p10k: sources `p10k.zsh` then `p10k.local.zsh` |
+| `~/.config/zsh/p10k.local.zsh` | Machine-local overrides — not tracked, not committed |
+| `p10k.local.zsh.template` | Template to copy when creating a local override |
+| `rc/prompt.zsh` | Pure-zsh fallback prompt (active briefly before p10k loads) |
+
+**Loading sequence:**
+1. `prompt.zsh` sets a minimal git-aware fallback prompt.
+2. `pluginlist.zsh` replaces it with `%~\n> ` while zinit bootstraps.
+3. zinit deferred slot `wait'!0b'` fires → `powerlevel10k_atload.zsh` sources `p10k.zsh` → p10k takes over `PROMPT` / `RPROMPT`.
+4. If `~/.config/zsh/p10k.local.zsh` exists it is sourced last, overriding any `POWERLEVEL9K_*` variable.
+
+**Editing the default prompt:** edit `rc/pluginconfig/p10k.zsh` directly — do **not** run `p10k configure` (the wizard overwrites this file). Reload with `p10k reload` or `source ~/.config/zsh/rc/pluginconfig/p10k.zsh`.
+
+**Machine-local customizations (not in repo):** copy `config/core/zsh/p10k.local.zsh.template` → `~/.config/zsh/p10k.local.zsh`. Override any `POWERLEVEL9K_*` variable there. Reload with `source ~/.config/zsh/p10k.local.zsh`.
+
+Do **not** set `PROMPT` or `RPROMPT` directly anywhere — p10k owns them after it loads.
+
