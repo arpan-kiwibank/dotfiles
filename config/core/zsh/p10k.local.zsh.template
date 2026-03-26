@@ -12,10 +12,12 @@
 # Browse all POWERLEVEL9K_* vars: grep 'typeset -g POWERLEVEL9K_' ~/.config/zsh/rc/pluginconfig/p10k.zsh
 
 # ─── Font / icon mode ──────────────────────────────────────────────────────────
-# 'nerdfont-complete' requires a Nerd Font (default in p10k.zsh).
-# 'ascii' works everywhere — no special font needed.
+# The default is 'ascii' (repo default — safe on ephemeral/CI machines).
+# Enable Nerd Font icons on machines where the terminal has a Nerd Font installed
+# (e.g. WezTerm with a patched font):
 #
-#   typeset -g POWERLEVEL9K_MODE=ascii
+#   typeset -g POWERLEVEL9K_MODE=nerdfont-complete
+#   typeset -g POWERLEVEL9K_ICON_PADDING=moderate
 
 # ─── Instant prompt ────────────────────────────────────────────────────────────
 # Renders the prompt before .zshrc finishes loading (no flash of unstyled shell).

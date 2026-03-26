@@ -66,10 +66,11 @@
   )
 
   # Defines character set used by powerlevel10k. It's best to let `p10k configure` set it for you.
-  typeset -g POWERLEVEL9K_MODE=nerdfont-complete
-  # When set to `moderate`, some icons will have an extra space after them. This is meant to avoid
-  # icon overlap when using non-monospace fonts. When set to `none`, spaces are not added.
-  typeset -g POWERLEVEL9K_ICON_PADDING=moderate
+  # 'ascii' works on every terminal without a special font — safe for ephemeral/CI machines.
+  # Override to 'nerdfont-complete' in p10k.local.zsh on machines with a Nerd Font terminal.
+  typeset -g POWERLEVEL9K_MODE=ascii
+  # ICON_PADDING is only relevant with nerdfont/unicode modes; not needed for ascii.
+  typeset -g POWERLEVEL9K_ICON_PADDING=none
 
   # Basic style options that define the overall look of your prompt. You probably don't want to
   # change them.
