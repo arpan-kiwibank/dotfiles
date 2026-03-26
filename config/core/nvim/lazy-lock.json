@@ -99,8 +99,6 @@
   "nvim-lint": { "branch": "master", "commit": "968a35d54b3a4c1ce66609cf80b14d4ae44fe77f" },
   "nvim-lsp-smag": { "branch": "master", "commit": "add830cb376ebe3daac3f63b7f4349c499090918" },
   "nvim-lspconfig": { "branch": "master", "commit": "f4fef355efa3c5d0813512480ee7b2c050b09fe4" },
-  "nvim-luadev": { "branch": "master", "commit": "3ba0c02c378503739f1fdb95cff3ea2aad48db3e" },
-  "nvim-luapad": { "branch": "master", "commit": "176686eb616a5ada5dfc748f2b5109194bbe8a71" },
   "nvim-neoclip.lua": { "branch": "main", "commit": "32e05f2d23dc5b6a284a688c0535a83d1bfc633f" },
   "nvim-nio": { "branch": "master", "commit": "a428f309119086dc78dd4b19306d2d67be884eee" },
   "nvim-notify": { "branch": "master", "commit": "fbef5d32be8466dd76544a257d3f3dce20082a07" },

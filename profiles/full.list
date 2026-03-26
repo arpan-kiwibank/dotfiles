@@ -52,8 +52,6 @@ config/optional/ulauncher
 config/optional/pmy
 config/optional/gdb
 config/optional/efm-langserver
-config/optional/luaformatter
-config/optional/luacheck
 config/optional/prs
 config/optional/cspell
 config/optional/i3status-rust

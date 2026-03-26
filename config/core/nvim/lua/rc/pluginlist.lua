@@ -1598,11 +1598,6 @@ local plugins = {
 			require("rc/pluginconfig/iron")
 		end,
 	},
-	{
-		"rafcamlet/nvim-luapad",
-		cmd = { "Luapad" },
-		config = true,
-	},
 	-- I don't know how to use it
 	-- {
 	-- 	"Olical/conjure",
@@ -1687,13 +1682,6 @@ local plugins = {
 
 	--------------------------------
 	-- Neovim Lua development
-	-- do not customize K mapping
-	-- { "tjdevries/nlua.nvim", event = "VimEnter" },
-	-- { "tjdevries/manillua.nvim", event = "VimEnter" },
-	{
-		"bfredl/nvim-luadev",
-		event = "VimEnter"
-	},
 	{
 		"folke/lazydev.nvim",
 		ft = "lua", -- only load on lua files
