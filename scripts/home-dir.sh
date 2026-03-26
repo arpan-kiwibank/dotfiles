@@ -40,20 +40,14 @@ function load_profile_entries() {
 	local dotfiles_dir="$1"
 	local profile="$2"
 	local array_name="$3"
-	local profiles_dir="$dotfiles_dir/profiles"
+	local manifest="$dotfiles_dir/profiles/${profile}.list"
 
-	case "$profile" in
-		full)
-			append_manifest_entries "$profiles_dir/full.list" "$array_name"
-			;;
-		minimal)
-			append_manifest_entries "$profiles_dir/minimal.list" "$array_name"
-			;;
-		*)
-			print_error "Unsupported profile manifest: $profile"
-			exit 1
-			;;
-	esac
+	if [[ ! -f "$manifest" ]]; then
+		print_error "Profile manifest not found: profiles/${profile}.list"
+		exit 1
+	fi
+
+	append_manifest_entries "$manifest" "$array_name"
 }
 
 # Guard: minimal profile must never include config/optional/ entries.

@@ -4,7 +4,7 @@ set -euo pipefail
 
 function helpmsg() {
 	echo "Usage: ${BASH_SOURCE[0]:-$0} [--keep] [--docker] [profile ...]" 1>&2
-	echo "  profile: full or minimal (default: both)" 1>&2
+	echo "  profile: any profiles/*.list name (default: minimal full)" 1>&2
 	echo "  --keep:   keep temporary test directories even on success" 1>&2
 	echo "  --docker: also run in-container distro tests (requires docker daemon)" 1>&2
 }
@@ -493,11 +493,11 @@ function main() {
 			--docker)
 				run_docker="true"
 				;;
-			full | minimal)
-				profiles+=("$arg")
+			--*)
+				fail "Unknown option: $arg"
 				;;
 			*)
-				fail "Unknown argument: $arg"
+				profiles+=("$arg")
 				;;
 		esac
 	done
@@ -517,6 +517,8 @@ function main() {
 
 	local profile
 	for profile in "${profiles[@]}"; do
+		[[ -f "$dotfiles_dir/profiles/${profile}.list" ]] \
+			|| fail "Profile manifest not found: profiles/${profile}.list"
 		run_profile "$dotfiles_dir" "$profile" "$keep_tmp"
 	done
 

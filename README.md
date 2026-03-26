@@ -25,6 +25,22 @@ Switch at any time — cleanup is automatic:
 ./setup.sh --profile full      # switch back
 ```
 
+### Custom profiles
+
+Create your own profile by copying the template:
+
+```bash
+cp profiles/TEMPLATE.list profiles/workstation.list
+# Edit workstation.list — uncomment the entries you want
+./setup.sh --profile workstation
+```
+
+Any `profiles/*.list` file is a valid profile. The harness can test them too:
+
+```bash
+./scripts/test-update-harness.sh workstation
+```
+
 ## What you get
 
 **System packages** (via distro package manager):

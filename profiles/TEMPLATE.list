@@ -1,0 +1,75 @@
+# Custom Profile Template
+#
+# Create your own profile:
+#   1. Copy this file:  cp profiles/TEMPLATE.list profiles/myprofile.list
+#   2. Uncomment the entries you want linked to ~/.config/
+#   3. Run:  ./setup.sh --profile myprofile
+#
+# Each uncommented line becomes a symlink:
+#   config/core/zsh  →  ~/.config/zsh
+#   home/.zshenv     →  ~/.zshenv
+#   local-bin/alarm  →  ~/.local/bin/alarm
+#
+# Lines starting with # are comments. Blank lines are ignored.
+# Only entries listed here will be linked — nothing is assumed.
+
+# ── home ──────────────────────────────────────────────────────
+#home/.zshenv
+
+# ── local bin ─────────────────────────────────────────────────
+#local-bin/alarm
+#local-bin/hyprland-wrap.sh
+
+# ── core (shell, editors, terminal, git) ──────────────────────
+#config/core/zsh
+#config/core/nvim
+#config/core/helix
+#config/core/tmux
+#config/core/git
+#config/core/Code
+#config/core/Code - Insiders
+#config/core/readline
+#config/core/bat
+#config/core/gh
+
+# ── desktop — compositor (Hyprland-specific) ──────────────────
+#config/desktop/hypr/hypr
+#config/desktop/hypr/xdg-desktop-portal
+#config/desktop/hypr/environment.d
+#config/desktop/hypr/systemd
+
+# ── desktop — shared (compositor-agnostic) ────────────────────
+#config/desktop/waybar
+#config/desktop/dunst
+#config/desktop/fcitx5
+#config/desktop/fontconfig
+#config/desktop/swappy
+#config/desktop/copyq
+#config/desktop/xkb
+#config/desktop/keymaps
+#config/desktop/gtk-2.0
+#config/desktop/gtk-3.0
+#config/desktop/Kvantum
+
+# ── language managers ─────────────────────────────────────────
+#config/lang/mise
+
+# ── optional tools ────────────────────────────────────────────
+#config/optional/gitui
+#config/optional/zk
+#config/optional/pet
+#config/optional/ideavim
+#config/optional/zeno
+#config/optional/pmy
+#config/optional/gdb
+#config/optional/efm-langserver
+#config/optional/prs
+#config/optional/cspell
+
+# ── misc ──────────────────────────────────────────────────────
+#config/misc/chrome-flags.conf
+#config/misc/chromium-flags.conf
+#config/misc/code-flags.conf
+#config/misc/mimeapps.list
+#config/misc/lesskey
+#config/misc/tealdeer

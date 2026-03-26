@@ -15,6 +15,10 @@ description: "Use when: changing bootstrap scripts, setup flow, install/update/l
 
 ## Profile switching
 
+Profiles are manifest-driven: any `profiles/*.list` file is a valid profile.
+Built-in profiles are `full` and `minimal`; custom profiles are created by
+copying `profiles/TEMPLATE.list`.
+
 On a profile switch, `home-dir.sh` calls in order:
 
 1. `unlink_removed_entries()` — removes symlinks for entries absent in the new profile.
