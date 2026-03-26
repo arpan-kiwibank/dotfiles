@@ -255,6 +255,7 @@ function main() {
 	if [[ "$is_update" = true ]]; then
 		source "$current_dir"/basic-packages.sh
 		ensure_zsh_default_shell
+		source "$current_dir"/ai-tools.sh
 		source "$current_dir"/helix.sh
 		install_helix || print_warning "Helix install failed; run scripts/helix.sh manually to retry"
 		source "$current_dir"/nvim.sh

@@ -53,6 +53,15 @@ Any `profiles/*.list` file is a valid profile. The harness can test them too:
 | Neovim nightly | `nvim` |
 | Helix | `hx` |
 
+**AI coding tools** (downloaded from GitHub releases at bootstrap):
+
+| Tool | Command | Purpose |
+|------|---------|---------|
+| GitHub Copilot CLI | `gh copilot` | Shell, git, and gh command explanation; `gh copilot suggest`, `gh copilot explain` |
+| Claude Code | `claude` | Anthropic's agentic coding CLI (official installer, all platforms) |
+
+> First-run auth: `gh auth login` (for Copilot), `claude` (prompts for Anthropic login on first use).
+
 **Shell tools** (installed by [zinit](https://github.com/zdharma-continuum/zinit) on first zsh start):
 
 _User-facing programs:_
