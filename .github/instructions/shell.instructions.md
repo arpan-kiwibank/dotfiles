@@ -17,9 +17,9 @@ description: "Use when: changing zsh startup, zinit plugins, shell functions, co
 
 ## Optional-tool zinit plugins
 
-`DOTFILES_ACTIVE_PROFILE` is loaded at the top of `pluginlist.zsh` from the bootstrap state file (`${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/active-profile`), defaulting to `full` when the file does not exist (first run before bootstrap).
+`DOTFILES_ACTIVE_PROFILE` is loaded at the top of `pluginlist.zsh` from `${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/active-profile`, defaulting to `full` on first run.
 
-All zinit blocks tied to optional tools (entries in `config/optional/` that the `full` profile links but `minimal` does not) **must** live inside the guarded block:
+All optional-tool zinit blocks must live inside:
 
 ```zsh
 if [[ "$DOTFILES_ACTIVE_PROFILE" == "full" ]]; then
@@ -27,10 +27,6 @@ if [[ "$DOTFILES_ACTIVE_PROFILE" == "full" ]]; then
 fi
 ```
 
-This single gate prevents zinit from re-downloading tools that were cleaned up during a profile switch. **Do not add per-tool symlink guards** (`[[ -L ~/.config/<tool> ]]`) for optional plugins — put the block inside the `full`-only section instead.
+This prevents zinit from re-downloading tools cleaned up during a profile switch. Do not use per-tool symlink guards — put the block here instead.
 
-To add a new optional tool with a zinit integration:
-1. Add the config dir to `config/optional/<toolname>/`.
-2. Add `config/optional/<toolname>` to `profiles/full.list` (only).
-3. Add the zinit block inside the `if [[ "$DOTFILES_ACTIVE_PROFILE" == "full" ]]` section in `pluginlist.zsh`.
-4. Run the harness — `run_manifest_lint_test()` will catch it if you accidentally add it to `minimal.list` too.
+To add a new optional-tool plugin: (1) add config to `config/optional/<name>/`, (2) add `config/optional/<name>` to `full.list` only, (3) add the zinit block inside the `full`-only guard, (4) run the harness.
