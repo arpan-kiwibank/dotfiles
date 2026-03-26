@@ -56,7 +56,21 @@ Switch at any time — cleanup is automatic:
 | gh | `gh` | GitHub CLI |
 | ghq | `ghq` | Structured git repo manager |
 
-**Optional tools** (`full` profile only): `pet`, `zeno`, and others in `config/optional/`.
+**Optional tools** (`full` profile only):
+
+| Tool | What it does |
+|------|-------------|
+| pet | CLI snippet manager (`pet new`, `pet exec`, `pet search`) |
+| zeno | fzf-powered snippet/completion engine (requires Deno) |
+| gitui | Terminal UI for git |
+| zk | Zettelkasten note manager |
+| cspell | Spell checker config |
+| efm-langserver | General-purpose LSP proxy for linters/formatters |
+| pmy | Fuzzy completion rule engine |
+| gdb | GDB init config |
+| ideavim | JetBrains IdeaVim config |
+| prs | Password manager CLI config |
+| i3status-rust | Status bar for Sway |
 
 > **WSL**: `config/desktop/**` is skipped automatically in WSL2. Pass `--allow-desktop` to override.
 
