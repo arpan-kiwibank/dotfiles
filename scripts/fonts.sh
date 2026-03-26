@@ -65,6 +65,14 @@ function install_nerd_fonts() {
         return 0
     fi
 
+    # Validate archive before extraction (guards against empty mocked files in CI)
+    if ! unzip -t "$archive" >/dev/null 2>&1; then
+        print_warning "JetBrainsMono Nerd Font archive is invalid or empty — skipping extraction"
+        print_notice "  Re-run manually: bash scripts/fonts.sh"
+        rm -rf "$tmp_dir"
+        return 0
+    fi
+
     mkdir -p "${NERD_FONT_INSTALL_DIR}"
     # Install only variable TTF/OTF files — skip Windows bitmap fonts (.fon, .pfm)
     unzip -qo "$archive" "*.ttf" "*.otf" -d "${NERD_FONT_INSTALL_DIR}/" 2>/dev/null \
