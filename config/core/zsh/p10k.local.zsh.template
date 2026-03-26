@@ -16,10 +16,73 @@
 # Enable Nerd Font icons on machines where the terminal has a Nerd Font installed
 # (e.g. WezTerm with a patched font):
 #
-   typeset -g POWERLEVEL9K_MODE=nerdfont-complete
-   typeset -g POWERLEVEL9K_ICON_PADDING=moderate
-#   # Branch icon for the custom git formatter (\uE0A0 = Nerd Font branch glyph)
-   typeset -g POWERLEVEL9K_VCS_BRANCH_ICON=$'\uE0A0 '
+typeset -g POWERLEVEL9K_MODE=nerdfont-complete
+typeset -g POWERLEVEL9K_ICON_PADDING=moderate
+# Branch icon for the custom git formatter (\uE0A0 = Nerd Font branch glyph)
+typeset -g POWERLEVEL9K_VCS_BRANCH_ICON=$'\uE0A0 '
+
+# ─── Segment background colours (powerline style) ─────────────────────────────
+# Powerline arrow separators between filled segments
+typeset -g POWERLEVEL9K_LEFT_SEGMENT_SEPARATOR=$'\uE0B0'   # filled right arrow
+typeset -g POWERLEVEL9K_RIGHT_SEGMENT_SEPARATOR=$'\uE0B2'  # filled left arrow
+typeset -g POWERLEVEL9K_LEFT_SUBSEGMENT_SEPARATOR=$'\uE0B1'  # thin right arrow
+typeset -g POWERLEVEL9K_RIGHT_SUBSEGMENT_SEPARATOR=$'\uE0B3' # thin left arrow
+# Restore padding around segment content (stripped by repo default)
+typeset -g POWERLEVEL9K_LEFT_LEFT_WHITESPACE=' '
+typeset -g POWERLEVEL9K_LEFT_RIGHT_WHITESPACE=' '
+typeset -g POWERLEVEL9K_RIGHT_LEFT_WHITESPACE=' '
+typeset -g POWERLEVEL9K_RIGHT_RIGHT_WHITESPACE=' '
+# Per-segment background + foreground
+typeset -g POWERLEVEL9K_CONTEXT_DEFAULT_BACKGROUND=5       # magenta bg
+typeset -g POWERLEVEL9K_CONTEXT_DEFAULT_FOREGROUND=0       # black text
+typeset -g POWERLEVEL9K_CONTEXT_REMOTE_BACKGROUND=1        # red bg in SSH
+typeset -g POWERLEVEL9K_CONTEXT_REMOTE_FOREGROUND=0
+typeset -g POWERLEVEL9K_CONTEXT_ROOT_BACKGROUND=1          # red bg as root
+typeset -g POWERLEVEL9K_CONTEXT_ROOT_FOREGROUND=0
+typeset -g POWERLEVEL9K_DIR_BACKGROUND=4                   # blue bg
+typeset -g POWERLEVEL9K_DIR_FOREGROUND=0                   # black text
+typeset -g POWERLEVEL9K_DIR_SHORTENED_FOREGROUND=8         # grey for shortened parts
+typeset -g POWERLEVEL9K_DIR_ANCHOR_FOREGROUND=15           # bright white for anchors
+typeset -g POWERLEVEL9K_VCS_CLEAN_BACKGROUND=6             # cyan bg — clean repo
+typeset -g POWERLEVEL9K_VCS_CLEAN_FOREGROUND=0
+typeset -g POWERLEVEL9K_VCS_MODIFIED_BACKGROUND=3          # yellow bg — dirty repo
+typeset -g POWERLEVEL9K_VCS_MODIFIED_FOREGROUND=0
+typeset -g POWERLEVEL9K_VCS_UNTRACKED_BACKGROUND=1         # red bg — untracked files
+typeset -g POWERLEVEL9K_VCS_UNTRACKED_FOREGROUND=0
+
+# ─── Right prompt: battery + time ─────────────────────────────────────────────
+# Replaces the right element list to add battery and time before the newline.
+typeset -g POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS=(
+  status
+  command_execution_time
+  background_jobs
+  direnv
+  mise
+  virtualenv
+  kubecontext
+  terraform
+  aws
+  azure
+  gcloud
+  google_app_cred
+  battery
+  time
+  newline
+)
+# Battery styling
+typeset -g POWERLEVEL9K_BATTERY_LOW_THRESHOLD=20
+typeset -g POWERLEVEL9K_BATTERY_LOW_BACKGROUND=1           # red when low
+typeset -g POWERLEVEL9K_BATTERY_LOW_FOREGROUND=0
+typeset -g POWERLEVEL9K_BATTERY_CHARGING_BACKGROUND=2      # green when charging
+typeset -g POWERLEVEL9K_BATTERY_CHARGING_FOREGROUND=0
+typeset -g POWERLEVEL9K_BATTERY_CHARGED_BACKGROUND=6       # cyan when full
+typeset -g POWERLEVEL9K_BATTERY_CHARGED_FOREGROUND=0
+typeset -g POWERLEVEL9K_BATTERY_DISCONNECTED_BACKGROUND=8  # grey when on battery
+typeset -g POWERLEVEL9K_BATTERY_DISCONNECTED_FOREGROUND=0
+# Time styling
+typeset -g POWERLEVEL9K_TIME_FORMAT='%D{%H:%M}'            # 24-hour HH:MM
+typeset -g POWERLEVEL9K_TIME_BACKGROUND=8                  # dark grey bg
+typeset -g POWERLEVEL9K_TIME_FOREGROUND=15                 # white text
 
 # ─── Instant prompt ────────────────────────────────────────────────────────────
 # Renders the prompt before .zshrc finishes loading (no flash of unstyled shell).
@@ -39,13 +102,6 @@
 # Prepend an OS icon to the left prompt:
 #
 #   POWERLEVEL9K_LEFT_PROMPT_ELEMENTS=(os_icon "${POWERLEVEL9K_LEFT_PROMPT_ELEMENTS[@]}")
-
-# ─── Add time to right prompt ─────────────────────────────────────────────────
-# Append the current time as the last right-prompt segment:
-#
-#   POWERLEVEL9K_RIGHT_PROMPT_ELEMENTS+=(time)
-#   typeset -g POWERLEVEL9K_TIME_FORMAT='%D{%H:%M}'
-#   typeset -g POWERLEVEL9K_TIME_FOREGROUND=6
 
 # ─── Always show user@host ─────────────────────────────────────────────────────
 # By default 'context' only appears in SSH sessions or when running as root.
