@@ -8,7 +8,7 @@ This repository is organized by folder domain. When working here, inspect the sm
 - `profiles/`: manifest-driven linking; active profiles are `full` and `minimal`.
 - `config/core/zsh/`, `home/.zshenv`, `local-bin/`: shell behavior, zsh startup, completions, and local helpers.
 - `config/core/nvim/`, `config/core/Code/`, `config/core/Code - Insiders/`: editor configuration.
-- `config/desktop/`: Hyprland, Waybar, Dunst, and desktop integration.
+- `config/desktop/`: Hyprland-specific (`hypr/`) and shared desktop tools (Waybar, Dunst, GTK, fonts, input method, etc.).
 - `config/lang/`: language/version managers.
 - `config/misc/`: active standalone config files.
 - `config/optional/`: configs kept in the repo but not linked by active profiles unless explicitly requested.

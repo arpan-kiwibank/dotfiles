@@ -23,7 +23,7 @@ You are a routing-first agent for this dotfiles repository. Your job is to class
 - `profiles/`: manifest-driven linking and profile contents
 - `config/core/zsh/`, `home/.zshenv`, `local-bin/`: shell behavior, zsh startup, completions, shell helpers
 - `config/core/nvim/`, `config/core/Code/`, `config/core/Code - Insiders/`: editor behavior
-- `config/desktop/`: Hyprland, Waybar, Dunst, portal, session integration
+- `config/desktop/`: Hyprland-specific (`hypr/`), shared desktop tools (Waybar, Dunst, GTK, fonts, input method)
 - `config/lang/`: language and version manager configuration
 - `config/misc/`: standalone active config files
 - `config/optional/`: repo-kept but not actively linked configs

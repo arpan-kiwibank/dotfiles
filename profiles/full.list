@@ -17,22 +17,24 @@ config/core/readline
 config/core/bat
 config/core/gh
 
-# current desktop
+# desktop — compositor
 config/desktop/hypr/hypr
-config/desktop/hypr/waybar
-config/desktop/hypr/dunst
 config/desktop/hypr/xdg-desktop-portal
-config/desktop/hypr/fcitx5
-config/desktop/hypr/fontconfig
-config/desktop/hypr/swappy
-config/desktop/hypr/copyq
-config/desktop/hypr/xkb
-config/desktop/hypr/keymaps
-config/desktop/hypr/gtk-2.0
-config/desktop/hypr/gtk-3.0
-config/desktop/hypr/Kvantum
 config/desktop/hypr/environment.d
 config/desktop/hypr/systemd
+
+# desktop — shared (compositor-agnostic)
+config/desktop/waybar
+config/desktop/dunst
+config/desktop/fcitx5
+config/desktop/fontconfig
+config/desktop/swappy
+config/desktop/copyq
+config/desktop/xkb
+config/desktop/keymaps
+config/desktop/gtk-2.0
+config/desktop/gtk-3.0
+config/desktop/Kvantum
 
 # language managers
 config/lang/mise
