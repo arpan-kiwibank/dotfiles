@@ -55,6 +55,8 @@ Any `profiles/*.list` file is a valid profile. The harness can test them too:
 
 **Shell tools** (installed by [zinit](https://github.com/zdharma-continuum/zinit) on first zsh start):
 
+_User-facing programs:_
+
 | Tool | Command | Purpose |
 |------|---------|---------|
 | zoxide | `z` | Smart `cd` with frecency |
@@ -67,12 +69,47 @@ Any `profiles/*.list` file is a valid profile. The harness can test them too:
 | trashy | `rm` | Safe delete — moves to trash |
 | tealdeer | `tldr` | Offline tldr pages |
 | procs | `procs` | Modern `ps` replacement |
+| mmv | `mmv` | Bulk rename with glob patterns |
+| translate-shell | `trans` | CLI translator |
+| mocword | `mocword` | Word prediction (used by completions) |
 | mise | `mise` | Polyglot version manager |
 | direnv | `direnv` | Auto-load `.envrc` per directory |
 | gh | `gh` | GitHub CLI |
 | ghq | `ghq` | Structured git repo manager |
+| ghg | `ghg` | Install GitHub release binaries |
+| emojify | `emojify` | Replace `:emoji:` shortcodes in text |
+
+_Shell plugins (zsh infrastructure):_
+
+| Plugin | Purpose |
+|--------|---------|
+| powerlevel10k | Prompt theme |
+| fast-syntax-highlighting | Command syntax colouring |
+| zsh-autosuggestions | Fish-style inline suggestions |
+| zsh-autocomplete | Real-time completion menu |
+| zsh-completions | Extra completion definitions |
+| zsh-history-substring-search | `↑`/`↓` search by typed prefix |
+| zsh-abbrev-alias | Abbreviation expansion |
+| zsh-autoenv | Auto-source `.autoenv.zsh` per directory |
+| zsh-autopair | Auto-close brackets and quotes |
+| zsh-async | Async worker framework (used by other plugins) |
+| zsh-completion-generator | Generate completions from `--help` output |
+| zsh-auto-notify | Desktop notification when long commands finish (non-SSH only) |
+| cd-gitroot | `cd` to git repo root |
+| zshmarks | Named directory bookmarks |
+| zsh-git-sync | `git pull --rebase` alias helpers |
+| fzf-extras | Extra fzf key bindings |
+| zsh-plugin-fzf-finder | fzf-powered file finder widget |
+| fzf-marks | fzf integration for zshmarks |
+| fzf-zsh-completions | fzf-based tab completions |
+| zsh-fzf-widgets | Additional fzf widgets (history, git, etc.) |
+| emoji-cli | fzf emoji picker |
+| git-extra-commands | Extra git subcommands |
+| zinit-annex-readurl | zinit extension for URL-based installs |
 
 **Optional tools** (`full` profile only):
+
+_Config files linked by the profile:_
 
 | Tool | What it does |
 |------|-------------|
@@ -88,6 +125,13 @@ Any `profiles/*.list` file is a valid profile. The harness can test them too:
 | gdb | GDB init config |
 | ideavim | JetBrains IdeaVim config |
 | prs | Password manager CLI config |
+
+_Additional shell plugins loaded for non-minimal profiles:_
+
+| Plugin | Command | Purpose |
+|--------|---------|---------|
+| pet | `pet` | CLI snippet manager |
+| zeno.zsh | — | fzf snippet/completion engine (requires Deno) |
 
 > **WSL**: `config/desktop/**` is skipped automatically in WSL2. Pass `--allow-desktop` to override.
 
