@@ -34,7 +34,14 @@ function install_gh_copilot() {
         print_notice "[dry-run] would run: curl -fsSL https://gh.io/copilot-install | bash"
         return 0
     fi
-    curl -fsSL https://gh.io/copilot-install | bash
+    local exit_code=0
+    curl -fsSL https://gh.io/copilot-install | bash || exit_code=$?
+    if [[ $exit_code -ne 0 ]]; then
+        print_warning "GitHub Copilot CLI install failed (curl exit $exit_code — network or proxy block?)"
+        print_notice "  Install manually: curl -fsSL https://gh.io/copilot-install | bash"
+        print_notice "  Docs: https://docs.github.com/en/copilot/how-tos/copilot-cli/set-up-copilot-cli/install-copilot-cli"
+        return 0
+    fi
     print_success "GitHub Copilot CLI installed: copilot"
 }
 
@@ -63,7 +70,15 @@ function install_claude_code() {
         print_notice "[dry-run] would run: curl -fsSL https://claude.ai/install.sh | bash"
         return 0
     fi
-    curl -fsSL https://claude.ai/install.sh | bash
+    local exit_code=0
+    curl -fsSL https://claude.ai/install.sh | bash || exit_code=$?
+    if [[ $exit_code -ne 0 ]]; then
+        print_warning "Claude Code install failed (curl exit $exit_code — network or proxy block?)"
+        print_notice "  Install manually once off the corporate network:"
+        print_notice "    curl -fsSL https://claude.ai/install.sh | bash"
+        print_notice "  Docs: https://code.claude.com/docs/en/quickstart"
+        return 0
+    fi
     print_success "Claude Code installed: claude"
 }
 
