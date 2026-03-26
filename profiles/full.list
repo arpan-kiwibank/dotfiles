@@ -55,9 +55,6 @@ config/optional/efm-langserver
 config/optional/prs
 config/optional/cspell
 config/optional/i3status-rust
-config/optional/autokey
-config/optional/hawck
-config/optional/conky
 
 # misc
 config/misc/chrome-flags.conf
