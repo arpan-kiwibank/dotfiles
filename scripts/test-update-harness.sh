@@ -207,7 +207,7 @@ exit 0
 TARMOCK
 	chmod +x "$mock_dir/tar"
 
-	PATH="$mock_dir:$PATH" HOME="$home_dir" XDG_CACHE_HOME="$cache_dir" XDG_DATA_HOME="$home_dir/.local/share" \
+	PATH="$mock_dir:$PATH" HOME="$home_dir" XDG_CONFIG_HOME="$home_dir/.config" XDG_CACHE_HOME="$cache_dir" XDG_DATA_HOME="$home_dir/.local/share" \
 		bash "$dotfiles_dir/scripts/initiate.sh" update --profile "$profile" > "$tmp_root/run.log" 2>&1 || {
 		echo "[FAIL] profile=$profile root=$tmp_root" 1>&2
 		sed -n '1,200p' "$tmp_root/run.log" 1>&2
@@ -231,11 +231,47 @@ TARMOCK
 	echo "  commands: $(sed -n '1,6p' "$tmp_root/commands.log" | paste -sd ';' -)"
 	echo "  local-bin: $(find "$home_dir/.local/bin" -maxdepth 1 -type l | wc -l | tr -d ' ') symlinks"
 
-	# Idempotency check: run the link phase a second time with the same HOME.
-	# The pre-scan should detect all entries already linked and print the
-	# fast-path message without creating any new backup dir.
+	# Link phase: create all config symlinks (update does not link config/*).
+	: > "$tmp_root/link.log"
+	PATH="$mock_dir:$PATH" HOME="$home_dir" XDG_CONFIG_HOME="$home_dir/.config" XDG_CACHE_HOME="$cache_dir" XDG_DATA_HOME="$home_dir/.local/share" \
+		bash "$dotfiles_dir/scripts/initiate.sh" link --profile "$profile" >> "$tmp_root/link.log" 2>&1 \
+		|| fail "link phase failed for profile=$profile"
+
+	# Symlink completeness: every config/* manifest entry must produce a
+	# symlink in ~/.config/ whose target resolves to the repo source dir.
+	local config_home="${home_dir}/.config"
+	local entry missing_count=0
+	while IFS= read -r entry; do
+		[[ "$entry" == config/* ]] || continue
+		local src="$dotfiles_dir/$entry"
+		[[ -e "$src" || -L "$src" ]] || continue
+		# Entries with _install.sh use custom installers, not simple symlinks
+		[[ -f "$src/_install.sh" ]] && continue
+		# Desktop entries are skipped in WSL
+		if [[ "$entry" == config/desktop/* ]] \
+			&& grep -q "WSL detected\|DOTFILES_SKIP_DESKTOP" "$tmp_root/link.log" 2>/dev/null; then
+			continue
+		fi
+		local leaf
+		leaf=$(basename "$entry")
+		local expected_link="$config_home/$leaf"
+		if [[ ! -L "$expected_link" ]]; then
+			echo "  [MISS] no symlink: $expected_link (from $entry)" 1>&2
+			missing_count=$((missing_count + 1))
+		elif [[ "$(readlink -f "$expected_link")" != "$(readlink -f "$src")" ]]; then
+			echo "  [WRONG] $expected_link -> $(readlink -f "$expected_link"), expected $(readlink -f "$src")" 1>&2
+			missing_count=$((missing_count + 1))
+		fi
+	done < <(grep -v '^[[:space:]]*#\|^[[:space:]]*$' "$dotfiles_dir/profiles/${profile}.list")
+	if [[ "$missing_count" -gt 0 ]]; then
+		fail "profile=$profile: $missing_count config entries not correctly linked"
+	fi
+	echo "  config symlinks: all verified"
+
+	# Idempotency check: run the link phase again — the pre-scan should detect
+	# all entries already linked and print the fast-path message.
 	: > "$tmp_root/run2.log"
-	PATH="$mock_dir:$PATH" HOME="$home_dir" XDG_CACHE_HOME="$cache_dir" XDG_DATA_HOME="$home_dir/.local/share" \
+	PATH="$mock_dir:$PATH" HOME="$home_dir" XDG_CONFIG_HOME="$home_dir/.config" XDG_CACHE_HOME="$cache_dir" XDG_DATA_HOME="$home_dir/.local/share" \
 		bash "$dotfiles_dir/scripts/initiate.sh" link --profile "$profile" >> "$tmp_root/run2.log" 2>&1 \
 		|| fail "idempotent link re-run failed for profile=$profile"
 	grep -q "already linked" "$tmp_root/run2.log" \
