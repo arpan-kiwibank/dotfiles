@@ -47,13 +47,4 @@ _npm_path_hook() {
 [[ -z $chpwd_functions ]] && chpwd_functions=()
 chpwd_functions=($chpwd_functions _npm_path_hook)
 
-#==============================================================#
-## Copilot cli
-#==============================================================#
-# sudo npm install -g @githubnext/github-copilot-cli
-# github-copilot-cli auth
-if existsCommand github-copilot-cli; then
-	eval "$(github-copilot-cli alias -- "$0")"
-fi
-
 

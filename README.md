@@ -57,7 +57,7 @@ Any `profiles/*.list` file is a valid profile. The harness can test them too:
 | Claude Code | `claude` | Official installer (`curl -fsSL https://claude.ai/install.sh \| bash`) |
 
 > First-run auth: `gh auth login`, `copilot /login`, `claude`.
-> All tools install to `~/.local/bin` for non-root users.
+> `gh` installs to the system via the distro package manager. Neovim, Helix, Copilot CLI, and Claude Code install to `~/.local/bin` for non-root users.
 
 **Shell tools** (installed by [zinit](https://github.com/zdharma-continuum/zinit) on first zsh start):
 

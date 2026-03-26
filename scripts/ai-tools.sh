@@ -13,8 +13,19 @@ source "$current_dir"/utils.sh
 # First-run auth: copilot /login
 
 function install_gh_copilot() {
-    if command -v copilot >/dev/null 2>&1; then
-        print_notice "GitHub Copilot CLI already installed: $(copilot --version 2>/dev/null || echo 'version unknown')"
+    # Check the exact install path instead of `command -v copilot`, because other
+    # tools (e.g. VS Code's Copilot Chat CLI shim) may shadow the name and hang
+    # on --version with an interactive prompt.
+    # The official installer places the binary in ~/.local/bin (non-root) or
+    # /usr/local/bin (root).
+    local copilot_bin
+    if [[ $EUID -eq 0 ]]; then
+        copilot_bin="/usr/local/bin/copilot"
+    else
+        copilot_bin="${HOME}/.local/bin/copilot"
+    fi
+    if [[ -x "$copilot_bin" ]]; then
+        print_notice "GitHub Copilot CLI already installed: $copilot_bin"
         return 0
     fi
 
@@ -34,8 +45,16 @@ function install_gh_copilot() {
 # First-run auth: claude (prompts for Anthropic login)
 
 function install_claude_code() {
-    if command -v claude >/dev/null 2>&1; then
-        print_notice "Claude Code already installed: $(claude --version 2>/dev/null || echo 'version unknown')"
+    # Check the exact install path for the same reason as install_gh_copilot —
+    # avoid calling `claude --version` in case another tool shadows the name.
+    local claude_bin
+    if [[ $EUID -eq 0 ]]; then
+        claude_bin="/usr/local/bin/claude"
+    else
+        claude_bin="${HOME}/.local/bin/claude"
+    fi
+    if [[ -x "$claude_bin" ]]; then
+        print_notice "Claude Code already installed: $claude_bin"
         return 0
     fi
 
