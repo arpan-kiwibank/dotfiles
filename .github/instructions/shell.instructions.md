@@ -15,6 +15,33 @@ description: "Use when: changing zsh startup, zinit plugins, shell functions, co
 - After bootstrap, installed binaries (`hx`, `nvim`, `tldr`, etc.) are only on PATH in a **zsh session** — `.zshenv` adds `~/.local/bin` to PATH when zsh starts. The bootstrap bash session does not have this. New users must run `exec zsh` before testing installed tools.
 - Do not pull in desktop or editor context unless the shell behavior clearly integrates with them.
 
+## Zinit patterns
+
+Standard templates used in `pluginlist.zsh`:
+
+```zsh
+# gh-r raw binary (no archive) — chmod is required; tar does not run
+zinit wait'1' lucid \
+    from"gh-r" as"program" pick"<binary>" \
+    atclone'chmod +x <binary>' atpull'chmod +x <binary>' \
+    light-mode for @<org>/<repo>
+
+# gh-r archive with nested binary — tar preserves execute bit; no chmod needed
+zinit wait'1' lucid \
+    from"gh-r" as"program" pick"<dir-prefix>*/<binary>" \
+    light-mode for @<org>/<repo>
+
+# zsh plugin with per-plugin config files
+zinit wait'1' lucid \
+    atinit"source $ZHOMEDIR/rc/pluginconfig/<name>_atinit.zsh" \
+    atload"source $ZHOMEDIR/rc/pluginconfig/<name>_atload.zsh" \
+    light-mode for @<org>/<repo>
+```
+
+- Always use `lucid` to suppress the download banner.
+- Use `wait'1'` by default. `wait'0a'`/`wait'0b'`/`wait'0c'` are reserved for prompt, completion, and syntax-highlighting setup — do not promote a new plugin into `wait'0'` unless it must be present before those.
+- Core plugins (loaded for all profiles) go in the main body above the `if full` block, under the relevant section comment.
+
 ## Optional-tool zinit plugins
 
 `DOTFILES_ACTIVE_PROFILE` is loaded at the top of `pluginlist.zsh` from `${XDG_DATA_HOME:-$HOME/.local/share}/dotfiles/active-profile`, defaulting to `full` on first run.
@@ -29,4 +56,8 @@ fi
 
 This prevents zinit from re-downloading tools cleaned up during a profile switch. Do not use per-tool symlink guards — put the block here instead.
 
-To add a new optional-tool plugin: (1) add config to `config/optional/<name>/`, (2) add `config/optional/<name>` to `full.list` only, (3) add the zinit block inside the `full`-only guard, (4) run the harness.
+To add a new optional-tool plugin: (1) add config to `config/optional/<name>/`, (2) add `config/optional/<name>` to `full.list` only, (3) add the zinit block inside the `full`-only guard, (4) run the harness. See `docs/DEVELOPMENT.md` for full templates and guard-verification commands.
+
+## System packages
+
+System packages go in `scripts/basic-packages.sh`, which branches on `whichdistro()` (`debian` / `redhat` / `arch`). Always update all three branches — package names differ (e.g. `sqlite3` on Debian, `sqlite` on RHEL/Arch). Use `checkinstall <pkg>` — never call `apt-get`/`yum`/`pacman` directly.
