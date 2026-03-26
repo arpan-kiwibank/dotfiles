@@ -1432,9 +1432,8 @@
   #   - always:   Trim down prompt when accepting a command line.
   #   - same-dir: Trim down prompt when accepting a command line unless this is the first command
   #               typed after changing current working directory.
-  # 'same-dir' collapses accepted-command prompts to one line when in the same dir
-  # (reduces prompt noise in long sessions). Use 'always' or 'off' to override in p10k.local.zsh.
-  typeset -g POWERLEVEL9K_TRANSIENT_PROMPT=same-dir
+  # Off by default — opt in via p10k.local.zsh by setting POWERLEVEL9K_TRANSIENT_PROMPT=same-dir
+  typeset -g POWERLEVEL9K_TRANSIENT_PROMPT=off
 
   # Instant prompt mode.
   #

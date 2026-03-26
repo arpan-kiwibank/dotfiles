@@ -25,11 +25,11 @@
 #   typeset -g POWERLEVEL9K_INSTANT_PROMPT=quiet   # or 'verbose'
 
 # ─── Transient prompt ──────────────────────────────────────────────────────────
-# The default collapses accepted-command prompts in the same directory.
-# 'always' collapses every accepted command. 'off' keeps full prompts.
+# Off by default. 'same-dir' collapses accepted-command prompts when staying in
+# the same directory (cleaner sessions). 'always' collapses on every command.
 #
-#   typeset -g POWERLEVEL9K_TRANSIENT_PROMPT=always   # stricter collapse
-#   typeset -g POWERLEVEL9K_TRANSIENT_PROMPT=off       # disable
+#   typeset -g POWERLEVEL9K_TRANSIENT_PROMPT=same-dir  # recommended opt-in
+#   typeset -g POWERLEVEL9K_TRANSIENT_PROMPT=always    # collapse all prompts
 
 # ─── Add segments to left prompt ──────────────────────────────────────────────
 # Prepend an OS icon to the left prompt:
