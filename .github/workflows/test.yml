@@ -1,0 +1,56 @@
+name: Test
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+jobs:
+  # ── Mocked harness (fast, no Docker) ────────────────────────────────────────
+  # Runs on every push and PR. All package managers, curl, tar, wget, and
+  # sudo are stubbed — nothing is installed. Covers:
+  #   - minimal and full profile update + link phases
+  #   - config symlink completeness
+  #   - idempotent re-run
+  #   - active-profile state file
+  #   - profile-switch (unlink, cache purge, zinit cleanup, autoremove)
+  #   - manifest lint (static + dynamic optional-in-minimal guard)
+  harness:
+    name: Harness (mocked)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run test harness
+        run: bash scripts/test-update-harness.sh
+
+  # ── Docker distro tests ──────────────────────────────────────────────────────
+  # Runs the bootstrap pipeline inside real distro containers (nothing installed
+  # — all package managers and download tools are stubbed). Verifies that
+  # whichdistro() and checkinstall() dispatch to the correct package manager.
+  docker:
+    name: Docker (${{ matrix.label }})
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - label: fedora
+            image: fedora:latest
+            expected_distro: redhat
+          - label: archlinux
+            image: archlinux:latest
+            expected_distro: arch
+          - label: debian
+            image: debian:stable-slim
+            expected_distro: debian
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Run in-container distro test (${{ matrix.label }})
+        run: |
+          docker run --rm \
+            --volume "$PWD:/dotfiles:ro" \
+            "${{ matrix.image }}" \
+            bash /dotfiles/scripts/test-docker-distro.sh
